@@ -27,10 +27,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full bg-slate-50 dark:bg-slate-950 antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} h-full bg-background antialiased`}
       suppressHydrationWarning
     >
-      <body className="flex h-full overflow-hidden text-slate-900 dark:text-slate-100">
+      <body className="flex h-full overflow-hidden text-foreground">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Sidebar />
           <div className="flex flex-1 flex-col overflow-hidden">
