@@ -1,83 +1,68 @@
-import { Plus, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 const mockCustomers = [
-  { id: "1", name: "Alice Smith", email: "alice@example.com", phone: "+61 412 345 678", totalJobs: 3, status: "Active" },
-  { id: "2", name: "Bob Johnson", email: "bob@example.com", phone: "+61 498 765 432", totalJobs: 1, status: "Active" },
-  { id: "3", name: "Charlie Davis", email: "charlie@example.com", phone: "+61 444 555 666", totalJobs: 0, status: "Lead" },
+  { id: "1", name: "Alice Smith",   initials: "AS", email: "alice@example.com", phone: "+61 412 345 678", jobs: 3, status: "Active" },
+  { id: "2", name: "Bob Johnson",   initials: "BJ", email: "bob@example.com",   phone: "+61 498 765 432", jobs: 1, status: "Active" },
+  { id: "3", name: "Charlie Davis", initials: "CD", email: "charlie@example.com",phone: "+61 444 555 666", jobs: 0, status: "Lead"   },
+  { id: "4", name: "Diana Prince",  initials: "DP", email: "diana@example.com",  phone: "+61 411 222 333", jobs: 5, status: "Active" },
 ];
+
+const statusClasses: Record<string, string> = {
+  Active: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-400",
+  Lead:   "bg-blue-50 text-blue-700 ring-blue-700/10 dark:bg-blue-400/10 dark:text-blue-400",
+};
 
 export default function CustomersPage() {
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-      <div className="sm:flex sm:items-center sm:justify-between mb-8">
+    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="flex items-start justify-between mb-8">
         <div>
-          <h2 className="text-2xl font-bold leading-7 text-foreground sm:truncate sm:text-3xl sm:tracking-tight">
-            Customers
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A list of all customers bridging leads and active jobs.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Customers</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage your leads and active clients.</p>
         </div>
-        <div className="mt-4 sm:ml-4 sm:mt-0">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Add Customer
-          </Button>
-        </div>
+        <Button><Plus className="mr-2 h-4 w-4" /> Add Customer</Button>
       </div>
 
-      <div className="flex border-b border-border pb-4 mb-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search customers..."
-            className="w-full rounded-md border border-border bg-card px-10 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-500 dark:text-white"
-          />
-        </div>
+      {/* Search */}
+      <div className="relative max-w-sm mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <input placeholder="Search customers…" className="h-9 w-full rounded-lg border border-border bg-card pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-accent transition" />
       </div>
 
-      <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg dark:ring-white/10">
-        <table className="min-w-full divide-y divide-slate-300 dark:divide-slate-800">
-          <thead className="bg-background/50">
-            <tr>
-              <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-foreground sm:pl-6">Name</th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">Contact</th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">Status</th>
-              <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-foreground">Jobs</th>
-              <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                <span className="sr-only">Actions</span>
-              </th>
+      {/* Table */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <table className="min-w-full">
+          <thead>
+            <tr className="border-b border-border bg-muted/40">
+              <th className="py-3 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Customer</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden md:table-cell">Contact</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+              <th className="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground hidden sm:table-cell">Jobs</th>
+              <th className="py-3 pl-3 pr-6" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-card">
-            {mockCustomers.map((person) => (
-              <tr key={person.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-slate-900 sm:pl-6 dark:text-slate-100">
-                  {person.name}
-                </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">
-                  <div className="flex flex-col">
-                    <span>{person.email}</span>
-                    <span className="text-xs">{person.phone}</span>
+          <tbody className="divide-y divide-border">
+            {mockCustomers.map((p) => (
+              <tr key={p.id} className="group hover:bg-muted/30 transition-colors">
+                <td className="py-4 pl-6 pr-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent">{p.initials}</span>
+                    <span className="text-sm font-medium text-foreground">{p.name}</span>
                   </div>
                 </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">
-                  <span className={`inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                    person.status === 'Active' 
-                      ? 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/20'
-                      : 'bg-blue-50 text-blue-700 ring-blue-700/10 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/30'
-                  }`}>
-                    {person.status}
-                  </span>
+                <td className="px-3 py-4 hidden md:table-cell">
+                  <div className="flex flex-col gap-0.5 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1.5"><Mail className="h-3 w-3" />{p.email}</span>
+                    <span className="flex items-center gap-1.5"><Phone className="h-3 w-3" />{p.phone}</span>
+                  </div>
                 </td>
-                <td className="whitespace-nowrap px-3 py-4 text-sm text-muted-foreground">
-                  {person.totalJobs}
+                <td className="px-3 py-4">
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${statusClasses[p.status]}`}>{p.status}</span>
                 </td>
-                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                <td className="px-3 py-4 hidden sm:table-cell text-sm text-muted-foreground">{p.jobs}</td>
+                <td className="py-4 pl-3 pr-6 text-right">
+                  <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100"><MoreHorizontal className="h-4 w-4" /></Button>
                 </td>
               </tr>
             ))}
