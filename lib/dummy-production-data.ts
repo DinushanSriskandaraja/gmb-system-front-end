@@ -1,0 +1,93 @@
+export const dummyProductionData = {
+  header: {
+    attention: "Production Team",
+    clientName: "Global Offices Pty Ltd",
+    clientNumber: "ACC-5521",
+    status: "Priority Manufacturing",
+    projectManager: "Kiru",
+    numberOfBlinds: 5,
+    supplyAndInstall: "Yes",
+    productionDate: "2026-03-26",
+    startTime: "09:00",
+    finishedTime: "15:30"
+  },
+  fabricTracking: {
+    neededFabric: "45.5m",
+    anyStock: "12.0m",
+    orderedFabric: "35.0m",
+    receivedFabric: "35.0m",
+    balanceFabric: "1.5m"
+  },
+  jobs: [
+    {
+      id: "R-001",
+      supplier: "Alpha Fabrics",
+      location: "Boardroom",
+      control: "Left",
+      bracket: "Standard",
+      chain: "Stainless Steel",
+      customer: "Global Offices",
+      collectionName: "Holland Block Out - Slate",
+      bottomStyle: "Teardrop",
+      rollingWay: "Over-roll",
+      mountPoint: "Face Fit",
+      surface: "Concrete",
+      pelmetType: "D-Link Pelmet",
+      neededFabric: "8.2m",
+      notes: "Heavy duty brackets required",
+      wActual: "2400",
+      wCut: "2392",
+      hActual: "2100",
+      hCut: "2115"
+    },
+    {
+      id: "R-002",
+      supplier: "Alpha Fabrics",
+      location: "Office 1",
+      control: "Right",
+      bracket: "Standard",
+      chain: "Stainless Steel",
+      customer: "Global Offices",
+      collectionName: "Holland Block Out - Slate",
+      bottomStyle: "Teardrop",
+      rollingWay: "Under-roll",
+      mountPoint: "Recess Fit",
+      surface: "Timber",
+      pelmetType: "None",
+      neededFabric: "4.5m",
+      notes: "",
+      wActual: "1200",
+      wCut: "1192",
+      hActual: "1800",
+      hCut: "1815"
+    },
+    {
+      id: "R-003",
+      supplier: "Alpha Fabrics",
+      location: "Office 2",
+      control: "Right",
+      bracket: "Standard",
+      chain: "Stainless Steel",
+      customer: "Global Offices",
+      collectionName: "Holland Block Out - Slate",
+      bottomStyle: "Teardrop",
+      rollingWay: "Under-roll",
+      mountPoint: "Recess Fit",
+      surface: "Timber",
+      pelmetType: "None",
+      neededFabric: "4.5m",
+      notes: "",
+      wActual: "1200",
+      wCut: "1192",
+      hActual: "1800",
+      hCut: "1815"
+    }
+  ],
+  hardwareSummary: {
+    singleBKTs: 6,
+    doubleBKTs: 0,
+    remotes: 0,
+    chargers: 0
+  },
+  productionNotes: "Standard lead time applies. Please verify Boardroom measurements before cutting fabric as surface is concrete with uneven lintel."
+};

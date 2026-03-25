@@ -123,3 +123,53 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.1);
 }
+
+/* ============================================================
+   PRINT STYLES
+   ============================================================ */
+@media print {
+  /* Hide UI elements */
+  nav, .no-print, button, .sidebar-container { 
+    display: none !important; 
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .printable-a4 {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  /* Ensure colors and backgrounds print if needed (though usually we want white) */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .page-break {
+    page-break-before: always !important;
+  }
+}
+
+.print-only {
+  display: none;
+}

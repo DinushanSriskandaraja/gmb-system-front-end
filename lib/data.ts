@@ -47,6 +47,7 @@ export const suppliersDb: Record<string, any> = {
 
 export const getCustomers = () => initialCustomers;
 export const getJobs = () => jobsDb;
+export const getCustomerJobs = (customerId: string) => jobsDb.filter(j => j.customerId === customerId);
 export const getSuppliers = () => initialSuppliers;
 export const getOrders = () => initialOrders;
 export const getEmployees = () => initialEmployees;

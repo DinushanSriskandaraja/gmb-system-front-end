@@ -3,16 +3,18 @@
 import { useState } from "react";
 import { FileText, Plus, File, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
 
 type ModalMode = "quote" | "paperwork" | null;
 
 export function CustomerActionButtons() {
+  const router = useRouter();
   const [modalMode, setModalMode] = useState<ModalMode>(null);
 
   return (
     <>
       <div className="flex flex-wrap items-center sm:justify-end gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-        <Button variant="outline" className="w-full sm:w-auto">
+        <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push("/measurements/new")}>
           <File className="mr-2 h-4 w-4" />
           Create Measurement Sheet
         </Button>
@@ -24,10 +26,10 @@ export function CustomerActionButtons() {
           <FileText className="mr-2 h-4 w-4" />
           Generate Paperwork
         </Button>
-        <Button className="w-full sm:w-auto">
+        {/* <Button className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Move to Job
-        </Button>
+        </Button> */}
       </div>
 
       {modalMode && (
@@ -41,7 +43,7 @@ export function CustomerActionButtons() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               {modalMode === "paperwork" && (
                 <div className="space-y-2">
@@ -53,7 +55,7 @@ export function CustomerActionButtons() {
                   </select>
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">Select Measurement Sheet</label>
                 <select className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus:ring-2 focus:ring-accent outline-none">

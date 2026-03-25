@@ -2,7 +2,7 @@ import { FileText, Plus, File, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCustomer } from "@/lib/data";
+import { getCustomer, getCustomerJobs } from "@/lib/data";
 import { ContactDetailsCard } from "@/components/customers/ContactDetailsCard";
 import { ActivityCard } from "@/components/customers/ActivityCard";
 import { ActiveJobCard } from "@/components/customers/ActiveJobCard";
@@ -15,6 +15,7 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
   const { from } = await searchParams;
   const fromJob = from === "job";
   const customer = getCustomer(id);
+  const jobs = getCustomerJobs(id);
 
   if (!customer) {
     notFound();
@@ -22,6 +23,7 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
 
   const generatedFiles = [
     { id: "f1", name: "Measurement_Sheet_v1.pdf", type: "PDF", date: "Oct 14, 2026", size: "2.4 MB" },
+    { id: "f1", name: "Paperwork_V1.pdf", type: "PDF", date: "Oct 14, 2026", size: "2.4 MB" },
     { id: "f2", name: "Quote_Q-0042.pdf", type: "PDF", date: "Oct 15, 2026", size: "1.1 MB" },
     { id: "f3", name: "Invoice_INV-0042.pdf", type: "PDF", date: "Oct 18, 2026", size: "0.8 MB" },
   ];
@@ -59,7 +61,7 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left Column: Details */}
         <div className="md:col-span-1 flex flex-col gap-6">
-          <ActiveJobCard customer={customer} />
+          <ActiveJobCard jobs={jobs} />
           <ContactDetailsCard customer={customer} />
           <ActivityCard customer={customer} />
         </div>
