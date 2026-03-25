@@ -4,17 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Briefcase, Ruler,
-  Calculator, Package, FileText, Settings, Layers
+  Calculator, Package, FileText, Settings, Layers, Truck, ShoppingCart, UserCog
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard",    href: "/",            icon: LayoutDashboard },
-  { name: "Customers",    href: "/customers",   icon: Users },
+  { name: "Enquiries",   href: "/customers",   icon: Users },
   { name: "Jobs",         href: "/jobs",        icon: Briefcase },
   { name: "Measurements", href: "/measurements",icon: Ruler },
   { name: "Quotations",   href: "/quotations",  icon: Calculator },
   { name: "Stocks",       href: "/stocks",      icon: Package },
+  { name: "Suppliers",    href: "/suppliers",   icon: Truck },
+  { name: "Orders",       href: "/orders",      icon: ShoppingCart },
+  { name: "Employees",    href: "/employees",   icon: UserCog },
   { name: "Paperworks",   href: "/paperworks",  icon: FileText },
 ];
 

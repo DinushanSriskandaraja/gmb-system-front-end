@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 /* ============================================================
    CENTRALIZED THEME TOKENS — edit only here
@@ -93,7 +92,7 @@
   --color-muted-foreground:  var(--muted-foreground);
   --color-sidebar:           var(--sidebar);
   --color-sidebar-foreground:var(--sidebar-foreground);
-  --font-sans: "Inter", var(--font-geist-sans), sans-serif;
+  --font-sans: var(--font-inter), var(--font-geist-sans), sans-serif;
 }
 
 /* ============================================================
@@ -106,7 +105,7 @@ html { scroll-behavior: smooth; }
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: "Inter", var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-inter), var(--font-geist-sans), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
