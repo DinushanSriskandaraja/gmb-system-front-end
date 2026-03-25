@@ -37,20 +37,11 @@ export default function NewMeasurementPage() {
   const [locations, setLocations] = useState<Location[]>([]);
   const [nextLocationId, setNextLocationId] = useState(1);
   const [activeLocationId, setActiveLocationId] = useState<number | null>(null);
+  const [activeCoveringId, setActiveCoveringId] = useState<string | null>(null);
 
   useEffect(() => {
     if (locations.length === 0) {
-      const initialCovering: Covering = {
-        id: Date.now().toString(),
-        type: productTypes[0],
-        sp1: "", sp2: "", sp3: "",
-        c1: "", c2: "", c3: "", c4: "",
-        m1: "", m2: "", m3: "", m4: "",
-        surface: "", com1: "", components: "", brackets: "",
-        inWidth: 0, inDrop: 0,
-        outWidth: 0, outDrop: 0,
-      };
-
+      const initialCovering = createEmptyCovering();
       const initialLocation: Location = {
         id: 1,
         name: "",
@@ -59,12 +50,13 @@ export default function NewMeasurementPage() {
 
       setLocations([initialLocation]);
       setActiveLocationId(1);
+      setActiveCoveringId(initialCovering.id);
       setNextLocationId(2);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const createEmptyCovering = (): Covering => ({
-    id: Date.now().toString(),
+    id: Date.now().toString() + Math.random().toString(36).substr(2, 5),
     type: productTypes[0],
     sp1: "", sp2: "", sp3: "",
     c1: "", c2: "", c3: "", c4: "",
@@ -89,17 +81,23 @@ export default function NewMeasurementPage() {
   };
 
   const addCoveringToLocation = (locId: number) => {
+    const newCov = createEmptyCovering();
     setLocations(prev => prev.map(loc => {
       if (loc.id !== locId) return loc;
-      return { ...loc, coverings: [...loc.coverings, createEmptyCovering()] };
+      return { ...loc, coverings: [...loc.coverings, newCov] };
     }));
+    setActiveCoveringId(newCov.id);
   };
 
   const deleteCovering = (locId: number, covId: string) => {
     setLocations(prev => prev.map(loc => {
       if (loc.id !== locId) return loc;
       const remaining = loc.coverings.filter(c => c.id !== covId);
-      return { ...loc, coverings: remaining.length > 0 ? remaining : loc.coverings };
+      const updatedCoverings = remaining.length > 0 ? remaining : loc.coverings;
+      if (activeCoveringId === covId && updatedCoverings.length > 0) {
+        setActiveCoveringId(updatedCoverings[0].id);
+      }
+      return { ...loc, coverings: updatedCoverings };
     }));
   };
 
@@ -107,7 +105,13 @@ export default function NewMeasurementPage() {
     setLocations(prev => prev.filter(l => l.id !== locId));
     if (activeLocationId === locId) {
       const remaining = locations.filter(l => l.id !== locId);
-      setActiveLocationId(remaining.length > 0 ? remaining[0].id : null);
+      if (remaining.length > 0) {
+        setActiveLocationId(remaining[0].id);
+        setActiveCoveringId(remaining[0].coverings[0]?.id || null);
+      } else {
+        setActiveLocationId(null);
+        setActiveCoveringId(null);
+      }
     }
   };
 
@@ -115,32 +119,41 @@ export default function NewMeasurementPage() {
     const original = locations.find(l => l.id === locId);
     if (!original) return;
 
+    const copiedCoverings = original.coverings.map(cov => ({
+      ...cov,
+      id: Date.now().toString() + Math.random().toString(36).substr(2, 5)
+    }));
+
     const copied: Location = {
       id: nextLocationId,
       name: original.name ? `${original.name} (Copy)` : `Location ${nextLocationId}`,
-      coverings: original.coverings.map(cov => ({
-        ...cov,
-        id: Date.now().toString() + Math.random().toString(36)
-      }))
+      coverings: copiedCoverings
     };
 
     setLocations(prev => [...prev, copied]);
     setActiveLocationId(nextLocationId);
+    setActiveCoveringId(copiedCoverings[0]?.id || null);
     setNextLocationId(prev => prev + 1);
   };
 
   const switchToLocation = (locId: number) => {
     setActiveLocationId(locId);
+    const loc = locations.find(l => l.id === locId);
+    if (loc && loc.coverings.length > 0) {
+      setActiveCoveringId(loc.coverings[0].id);
+    }
   };
 
   const addNewLocation = () => {
+    const newCov = createEmptyCovering();
     const newLoc: Location = {
       id: nextLocationId,
       name: "",
-      coverings: [createEmptyCovering()]
+      coverings: [newCov]
     };
     setLocations(prev => [...prev, newLoc]);
     setActiveLocationId(nextLocationId);
+    setActiveCoveringId(newCov.id);
     setNextLocationId(prev => prev + 1);
   };
 
@@ -181,7 +194,12 @@ export default function NewMeasurementPage() {
 
       {/* Saved Locations - Horizontal Scroll */}
       <div className="mb-10">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Saved Locations</p>
+        <div className="flex justify-between items-end mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Saved Locations</p>
+          <Button variant="outline" size="sm" onClick={addNewLocation}>
+            <Plus className="mr-2 h-4 w-4" /> Add Location
+          </Button>
+        </div>
         <div className="flex gap-4 overflow-x-auto pb-6 snap-x custom-scroll">
           {locations.map(loc => (
             <div
@@ -237,124 +255,159 @@ export default function NewMeasurementPage() {
             </Button>
           </div>
 
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-semibold">Coverings</h3>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={() => addCoveringToLocation(activeLocation.id)}>
-                  <Plus className="mr-2 h-4 w-4" /> Add another covering
-                </Button>
-                <Button onClick={addNewLocation}>
-                  <Plus className="mr-2 h-4 w-4" /> Add New Location
+          <div className="flex flex-col">
+            {/* Covering Tabs */}
+            <div className="flex px-8 pt-4 gap-2 overflow-x-auto border-b bg-muted/20 custom-scroll">
+              {activeLocation.coverings.map((cov, idx) => {
+                const isActive = activeCoveringId === cov.id;
+                return (
+                  <button
+                    key={cov.id}
+                    onClick={() => setActiveCoveringId(cov.id)}
+                    className={`px-5 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-colors flex items-center gap-2 ${
+                      isActive ? "border-accent text-accent" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                    }`}
+                  >
+                    Covering {idx + 1}
+                    <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-muted-foreground">{cov.type}</span>
+                  </button>
+                );
+              })}
+              <div className="px-2 py-2">
+                <Button variant="ghost" size="sm" onClick={() => addCoveringToLocation(activeLocation.id)} className="text-muted-foreground">
+                  <Plus className="h-4 w-4 mr-1" /> Add
                 </Button>
               </div>
             </div>
 
-            {activeLocation.coverings.map((cov, idx) => (
-              <div key={cov.id} className="mb-12 last:mb-0 border rounded-2xl p-8 bg-background">
-                <div className="flex justify-between items-center mb-6">
-                  <div className="font-medium text-lg">Covering {idx + 1} — {cov.type}</div>
-                  {activeLocation.coverings.length > 1 && (
-                    <Button variant="ghost" size="sm" onClick={() => deleteCovering(activeLocation.id, cov.id)} className="text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
+            {/* Active Covering Vertical Form Preview */}
+            <div className="p-8 bg-background">
+              {activeLocation.coverings.map((cov, idx) => {
+                if (cov.id !== activeCoveringId) return null;
+                return (
+                  <div key={cov.id} className="space-y-8 animate-in fade-in duration-300">
+                    <div className="flex justify-between items-center pb-4 border-b">
+                      <h3 className="text-xl font-bold">Covering {idx + 1} Details</h3>
+                      {activeLocation.coverings.length > 1 && (
+                        <Button variant="outline" size="sm" onClick={() => deleteCovering(activeLocation.id, cov.id)} className="text-destructive border-destructive/30 hover:bg-destructive/10">
+                          <Trash2 className="h-4 w-4 mr-2" /> Delete Covering
+                        </Button>
+                      )}
+                    </div>
 
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-[1400px] border-collapse">
-                    <thead>
-                      <tr className="bg-muted/60">
-                        <th className="p-3 text-left border">Covering Type</th>
-                        <th className="p-3 text-left border">SP1</th>
-                        <th className="p-3 text-left border">SP2</th>
-                        <th className="p-3 text-left border">SP3</th>
-                        <th className="p-3 text-left border">C1</th>
-                        <th className="p-3 text-left border">C2</th>
-                        <th className="p-3 text-left border">C3</th>
-                        <th className="p-3 text-left border">C4</th>
-                        <th className="p-3 text-left border">M1</th>
-                        <th className="p-3 text-left border">M2</th>
-                        <th className="p-3 text-left border">M3</th>
-                        <th className="p-3 text-left border">M4</th>
-                        <th className="p-3 text-left border">Surface</th>
-                        <th className="p-3 text-left border">Com 1</th>
-                        <th className="p-3 text-left border">Components</th>
-                        <th className="p-3 text-left border">Brackets</th>
-                        <th className="p-3 text-center border" colSpan={2}>In Frame</th>
-                        <th className="p-3 text-center border" colSpan={2}>Out Frame</th>
-                      </tr>
-                      <tr className="bg-muted/30 text-xs">
-                        <th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th><th></th>
-                        <th className="p-2 text-center border">Width</th>
-                        <th className="p-2 text-center border">Drop</th>
-                        <th className="p-2 text-center border">Width</th>
-                        <th className="p-2 text-center border">Drop</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td className="p-3 border">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                      {/* Product Type & Main Setup */}
+                      <div className="space-y-4 xl:col-span-4 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Covering Type</label>
                           <select
                             value={cov.type}
                             onChange={(e) => updateCovering(activeLocation.id, cov.id, "type", e.target.value)}
-                            className="w-full border rounded px-3 py-2"
+                            className="w-full border rounded-xl bg-muted/10 px-4 py-3 font-medium outline-none focus:ring-2 focus:ring-accent"
                           >
                             {productTypes.map(t => <option key={t} value={t}>{t}</option>)}
                           </select>
-                        </td>
-                        {["sp1", "sp2", "sp3", "c1", "c2", "c3", "c4", "m1", "m2", "m3", "m4", "surface", "com1", "components", "brackets"].map(field => (
-                          <td key={field} className="p-3 border">
-                            <input
-                              type="text"
-                              value={(cov as any)[field] || ""}
-                              onChange={(e) => updateCovering(activeLocation.id, cov.id, field as keyof Covering, e.target.value)}
-                              className="w-full border rounded px-3 py-2 text-sm"
-                            />
-                          </td>
-                        ))}
-                        <td className="p-3 border">
-                          <input
-                            type="number"
-                            value={cov.inWidth || ""}
-                            onChange={(e) => updateCovering(activeLocation.id, cov.id, "inWidth", parseFloat(e.target.value) || 0)}
-                            placeholder="1200"
-                            className="w-full border rounded px-3 py-2 text-sm text-center"
-                          />
-                        </td>
-                        <td className="p-3 border">
-                          <input
-                            type="number"
-                            value={cov.inDrop || ""}
-                            onChange={(e) => updateCovering(activeLocation.id, cov.id, "inDrop", parseFloat(e.target.value) || 0)}
-                            placeholder="1800"
-                            className="w-full border rounded px-3 py-2 text-sm text-center"
-                          />
-                        </td>
-                        <td className="p-3 border">
-                          <input
-                            type="number"
-                            value={cov.outWidth || ""}
-                            onChange={(e) => updateCovering(activeLocation.id, cov.id, "outWidth", parseFloat(e.target.value) || 0)}
-                            placeholder="1250"
-                            className="w-full border rounded px-3 py-2 text-sm text-center"
-                          />
-                        </td>
-                        <td className="p-3 border">
-                          <input
-                            type="number"
-                            value={cov.outDrop || ""}
-                            onChange={(e) => updateCovering(activeLocation.id, cov.id, "outDrop", parseFloat(e.target.value) || 0)}
-                            placeholder="1850"
-                            className="w-full border rounded px-3 py-2 text-sm text-center"
-                          />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Surface</label>
+                          <input type="text" value={cov.surface || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "surface", e.target.value)} className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-accent" placeholder="e.g. Plaster, Brick..." />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Brackets</label>
+                          <input type="text" value={cov.brackets || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "brackets", e.target.value)} className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-accent" placeholder="Type of brackets" />
+                        </div>
+                      </div>
+
+                      {/* Dimensions Card */}
+                      <div className="xl:col-span-2 rounded-2xl border p-5 bg-card shadow-sm">
+                        <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground mb-4 border-b pb-2">Dimensions (mm)</h4>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-3 bg-muted/10 p-3 rounded-xl border border-border/50">
+                            <h5 className="text-xs font-bold text-center text-muted-foreground">IN FRAME</h5>
+                            <div>
+                              <label className="text-[10px] uppercase text-muted-foreground">Width</label>
+                              <input type="number" value={cov.inWidth || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "inWidth", parseFloat(e.target.value) || 0)} className="w-full border rounded-lg px-3 py-2 text-center font-mono focus:ring-2 focus:ring-accent" placeholder="0" />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase text-muted-foreground">Drop</label>
+                              <input type="number" value={cov.inDrop || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "inDrop", parseFloat(e.target.value) || 0)} className="w-full border rounded-lg px-3 py-2 text-center font-mono focus:ring-2 focus:ring-accent" placeholder="0" />
+                            </div>
+                          </div>
+                          <div className="space-y-3 bg-muted/10 p-3 rounded-xl border border-border/50">
+                            <h5 className="text-xs font-bold text-center text-muted-foreground">OUT FRAME</h5>
+                            <div>
+                              <label className="text-[10px] uppercase text-muted-foreground">Width</label>
+                              <input type="number" value={cov.outWidth || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "outWidth", parseFloat(e.target.value) || 0)} className="w-full border rounded-lg px-3 py-2 text-center font-mono focus:ring-2 focus:ring-accent" placeholder="0" />
+                            </div>
+                            <div>
+                              <label className="text-[10px] uppercase text-muted-foreground">Drop</label>
+                              <input type="number" value={cov.outDrop || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "outDrop", parseFloat(e.target.value) || 0)} className="w-full border rounded-lg px-3 py-2 text-center font-mono focus:ring-2 focus:ring-accent" placeholder="0" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Specifications Card */}
+                      <div className="xl:col-span-2 rounded-2xl border p-5 bg-card shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Sp & Com block */}
+                        <div className="space-y-3">
+                          <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-2">Specifications</h4>
+                          <div className="grid grid-cols-3 gap-2">
+                             <div>
+                               <label className="text-[10px] text-muted-foreground block">SP1</label>
+                               <input type="text" value={cov.sp1 || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "sp1", e.target.value)} className="w-full border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-accent" />
+                             </div>
+                             <div>
+                               <label className="text-[10px] text-muted-foreground block">SP2</label>
+                               <input type="text" value={cov.sp2 || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "sp2", e.target.value)} className="w-full border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-accent" />
+                             </div>
+                             <div>
+                               <label className="text-[10px] text-muted-foreground block">SP3</label>
+                               <input type="text" value={cov.sp3 || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "sp3", e.target.value)} className="w-full border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-accent" />
+                             </div>
+                          </div>
+                          <div>
+                             <label className="text-[10px] text-muted-foreground block mt-2">Com 1</label>
+                             <input type="text" value={cov.com1 || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "com1", e.target.value)} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent" />
+                          </div>
+                          <div>
+                             <label className="text-[10px] text-muted-foreground block">Components</label>
+                             <input type="text" value={cov.components || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, "components", e.target.value)} className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent" />
+                          </div>
+                        </div>
+
+                        {/* Control & Mount Card */}
+                        <div className="space-y-5">
+                          <div>
+                            <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-1 mb-2">Controls</h4>
+                            <div className="grid grid-cols-4 gap-2">
+                               {["c1","c2","c3","c4"].map(f => (
+                                 <div key={f}>
+                                   <label className="text-[10px] text-muted-foreground block uppercase">{f}</label>
+                                   <input type="text" value={(cov as any)[f] || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, f as keyof Covering, e.target.value)} className="w-full border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-accent text-center" />
+                                 </div>
+                               ))}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground border-b pb-1 mb-2">Mount</h4>
+                            <div className="grid grid-cols-4 gap-2">
+                               {["m1","m2","m3","m4"].map(f => (
+                                 <div key={f}>
+                                   <label className="text-[10px] text-muted-foreground block uppercase">{f}</label>
+                                   <input type="text" value={(cov as any)[f] || ""} onChange={(e) => updateCovering(activeLocation.id, cov.id, f as keyof Covering, e.target.value)} className="w-full border rounded-lg px-2 py-1.5 focus:ring-2 focus:ring-accent text-center" />
+                                 </div>
+                               ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
