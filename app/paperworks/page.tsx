@@ -1,4 +1,5 @@
 import { Search, FileText, Download, FileSignature, Receipt } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 
 const documents = [
@@ -26,6 +27,13 @@ export default function PaperworksPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Paperworks</h1>
           <p className="text-sm text-muted-foreground mt-1">Invoices, delivery notes, and client sign-offs.</p>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/paperworks/production">
+            <Button>
+              <FileText className="mr-2 h-4 w-4" /> Production Sheet
+            </Button>
+          </Link>
         </div>
       </div>
 
