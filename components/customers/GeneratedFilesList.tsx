@@ -8,14 +8,23 @@ export function GeneratedFilesList({ customer, generatedFiles }: { customer: any
   const router = useRouter();
 
   const handleView = (file: any) => {
-    if (file.name.toLowerCase().includes("quote")) {
-      // Extract ID from filename or use f2 as default for demo
+    const fileName = file.name.toLowerCase();
+    
+    if (fileName.includes("quote")) {
       const quoteId = file.name.split("_")[1]?.split(".")[0] || "Q-0042";
       router.push(`/quotation/${quoteId}`);
       return;
     }
-    // Navigate to measurements slug with preview mode
-    router.push(`/paperworks/production`);
+    
+    if (fileName.includes("measurement")) {
+      router.push(`/measurements/new`);
+      return;
+    }
+
+    if (fileName.includes("paperwork")) {
+      router.push(`/paperworks/production`);
+      return;
+    }
   };
 
   return (

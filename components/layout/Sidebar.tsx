@@ -9,16 +9,17 @@ import {
 import { cn } from "@/lib/utils";
 
 const navigation = [
-  { name: "Dashboard",    href: "/",            icon: LayoutDashboard },
-  { name: "Enquiries",   href: "/customers",   icon: Users },
-  { name: "Jobs",         href: "/jobs",        icon: Briefcase },
-  { name: "Measurements", href: "/measurements",icon: Ruler },
-  { name: "Quotations",   href: "/quotations",  icon: Calculator },
-  { name: "Stocks",       href: "/stocks",      icon: Package },
-  { name: "Suppliers",    href: "/suppliers",   icon: Truck },
-  { name: "Orders",       href: "/orders",      icon: ShoppingCart },
-  { name: "Employees",    href: "/employees",   icon: UserCog },
-  { name: "Paperworks",   href: "/paperworks",  icon: FileText },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard },
+  { name: "Enquiries", href: "/customers", icon: Users },
+  { name: "Products", href: "/products", icon: Package },
+  { name: "Jobs", href: "/jobs", icon: Briefcase },
+  // { name: "Measurements", href: "/measurements",icon: Ruler },
+  // { name: "Quotations",   href: "/quotations",  icon: Calculator },
+  { name: "Stocks", href: "/stocks", icon: Package },
+  { name: "Suppliers", href: "/suppliers", icon: Truck },
+  { name: "Orders", href: "/orders", icon: ShoppingCart },
+  { name: "Employees", href: "/employees", icon: UserCog },
+  // { name: "Paperworks",   href: "/paperworks",  icon: FileText },
 ];
 
 export function Sidebar() {
