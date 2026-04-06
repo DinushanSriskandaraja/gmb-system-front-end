@@ -4,73 +4,75 @@
    CENTRALIZED THEME TOKENS — edit only here
    ============================================================ */
 :root {
-  /* Surfaces */
-  --background:         #f0f4f8;
-  --foreground:         #0d1b2a;
+  /* Surfaces - Minimal White/Zinc Palette */
+  --background:         #ffffff;
+  --foreground:         #09090b;
   --card:               #ffffff;
-  --card-foreground:    #0d1b2a;
+  --card-foreground:    #09090b;
 
   /* Structural */
-  --border:             #d1dae6;
-  --input:              #d1dae6;
-  --ring:               #3b82f6;
+  --border:             #e4e4e7;
+  --input:              #e4e4e7;
+  --ring:               #18181b;
 
-  /* Brand / Accent */
-  --accent:             #3b82f6;
-  --accent-foreground:  #ffffff;
+  /* Brand / Accent - Minimal */
+  --accent:             #f4f4f5;
+  --accent-foreground:  #09090b;
 
   /* Primary (buttons) */
-  --primary:            #1e3a5f;
-  --primary-foreground: #f0f4f8;
+  --primary:            #18181b;
+  --primary-foreground: #fafafa;
 
   /* Muted */
-  --muted:              #e4ecf5;
-  --muted-foreground:   #5a7494;
+  --muted:              #f4f4f5;
+  --muted-foreground:   #71717a;
 
-  /* Sidebar */
-  --sidebar:            #1e3a5f;
-  --sidebar-foreground: #cfe4ff;
-  --sidebar-active:     #3b82f6;
-  --sidebar-muted:      rgba(207,228,255,0.55);
+  /* Sidebar - Light Zinc */
+  --sidebar:            #fafafa;
+  --sidebar-foreground: #71717a;
+  --sidebar-active:     #09090b;
+  --sidebar-muted:      #e4e4e7;
 
-  /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+  /* Shadows - Minimal */
+  --shadow-sm:  0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+  --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+  --shadow-xl:  0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
 }
 
 .dark {
-  /* Surfaces */
-  --background:         #0b1220;
-  --foreground:         #e8f0fe;
-  --card:               #111827;
-  --card-foreground:    #e8f0fe;
+  /* Surfaces - Deep Zinc */
+  --background:         #09090b;
+  --foreground:         #fafafa;
+  --card:               #09090b;
+  --card-foreground:  #fafafa;
 
   /* Structural */
-  --border:             #1e2d45;
-  --input:              #1e2d45;
-  --ring:               #60a5fa;
+  --border:             #27272a;
+  --input:              #27272a;
+  --ring:               #d4d4d8;
 
   /* Brand / Accent */
-  --accent:             #60a5fa;
-  --accent-foreground:  #0b1220;
+  --accent:             #27272a;
+  --accent-foreground:  #fafafa;
 
   /* Primary */
-  --primary:            #60a5fa;
-  --primary-foreground: #0b1220;
+  --primary:            #fafafa;
+  --primary-foreground: #09090b;
 
   /* Muted */
-  --muted:              #162032;
-  --muted-foreground:   #7090b0;
+  --muted:              #27272a;
+  --muted-foreground:   #a1a1aa;
 
   /* Sidebar */
-  --sidebar:            #070f1a;
-  --sidebar-foreground: #a8c5e8;
-  --sidebar-active:     #1d4ed8;
-  --sidebar-muted:      rgba(168,197,232,0.08);
+  --sidebar:            #09090b;
+  --sidebar-foreground: #a1a1aa;
+  --sidebar-active:     #fafafa;
+  --sidebar-muted:      #27272a;
 
   /* Shadows */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.4), 0 2px 6px rgba(0,0,0,0.2);
+  --shadow-sm:  0 1px 2px 0 rgba(0,0,0,0.5);
+  --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.5), 0 2px 4px -2px rgba(0,0,0,0.5);
 }
 
 /* ============================================================
@@ -92,11 +94,12 @@
   --color-muted-foreground:  var(--muted-foreground);
   --color-sidebar:           var(--sidebar);
   --color-sidebar-foreground:var(--sidebar-foreground);
-  --font-sans: var(--font-inter), var(--font-geist-sans), sans-serif;
+  --font-sans: "Inter", var(--font-inter), system-ui, sans-serif;
+  --font-heading: "Outfit", var(--font-geist-sans), sans-serif;
 }
 
 /* ============================================================
-   BASE STYLES
+   BASE STYLES & UTILITIES
    ============================================================ */
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -105,9 +108,13 @@ html { scroll-behavior: smooth; }
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-inter), var(--font-geist-sans), Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
 }
 
 /* Scrollbar */
@@ -116,12 +123,47 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted-foreground); }
 
-/* Utility: glass card */
+/* Utility: Glassmorphism */
 .glass {
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Utility: Interactive effects */
+.hover-lift {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  @apply rounded-2xl p-6 shadow-xl transition-all duration-300;
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-card:hover {
+  @apply border-white/20 shadow-2xl;
+}
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-accent to-indigo-400;
 }
 
 /* ============================================================
