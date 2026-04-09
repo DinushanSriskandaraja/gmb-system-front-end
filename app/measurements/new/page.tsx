@@ -7,7 +7,7 @@ import {
   Info, Palette, Layers, Package, DollarSign, Home,
   Wrench, Clock, Calendar, Camera, ArrowLeft,
   CheckCircle, AlertCircle, Ruler, FileText, ClipboardList,
-  ChevronDown, WindowIcon, Maximize2, LayoutGrid,
+  ChevronDown, AppWindow, Maximize2, LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";

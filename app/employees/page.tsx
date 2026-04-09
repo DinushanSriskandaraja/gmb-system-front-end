@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Search, Mail, ShieldAlert, MonitorPlay, X, Lock } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, Search, Mail, ShieldAlert, MonitorPlay, X, Lock, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { EntityCard } from "@/components/shared/EntityCard";
-import { getEmployees } from "@/lib/data";
+import { getEmployees, createEmployee, updateEmployee } from "@/lib/db/employees";
+import { Employee } from "@/lib/db/types";
 
 const roleColors: Record<string, string> = {
   Admin:        "bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-400 dark:ring-rose-500/20",
@@ -18,35 +19,75 @@ const roleColors: Record<string, string> = {
 const roleOptions = ["Admin", "Manager", "Sales", "Installer", "Receptionist", "Accountant"];
 
 export default function EmployeesPage() {
-  const [employees, setEmployees] = useState(getEmployees());
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("All");
+  const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({ name: "", email: "", password: "", role: "Sales", position: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const updateRole = (id: string, newRole: string) => {
-    setEmployees(prev => prev.map(e => e.id === id ? { ...e, role: newRole } : e));
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      setLoading(true);
+      const data = await getEmployees();
+      setEmployees(data);
+    } catch (err) {
+      console.error("Failed to load employees", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAddEmployee = (e: React.FormEvent) => {
+  const updateRole = async (id: string, newRole: string) => {
+    try {
+      // Optimistic update
+      setEmployees(prev => prev.map(e => e.id === id ? { ...e, role: newRole } : e));
+      await updateEmployee(id, { role: newRole });
+    } catch (err) {
+      console.error("Failed to update role", err);
+      // Revert on error (could implement if desired)
+      fetchEmployees();
+    }
+  };
+
+  const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newEmp = {
-      id: `EMP-00${employees.length + 1}`,
-      name: formData.name,
-      initials: formData.name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2),
-      email: formData.email,
-      position: formData.position || "Staff",
-      role: formData.role,
-      status: "Active",
-      lastLogin: "Never"
-    };
-    setEmployees([...employees, newEmp]);
-    setIsModalOpen(false);
-    setFormData({ name: "", email: "", password: "", role: "Sales", position: "" });
+    try {
+      setIsSubmitting(true);
+      const newEmp = await createEmployee({
+        name: formData.name,
+        email: formData.email,
+        password_hash: formData.password, // In a real app, hash this backend!
+        role: formData.role,
+        designation: formData.position || "Staff",
+        phone: null,
+        status: "Active",
+        last_login: null
+      });
+      setEmployees([newEmp, ...employees]);
+      setIsModalOpen(false);
+      setFormData({ name: "", email: "", password: "", role: "Sales", position: "" });
+    } catch (err) {
+      console.error("Failed to add employee", err);
+      alert("Failed to create employee. Please ensure email is unique.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const visibleEmployees = filter === "All" ? employees : employees.filter(e => e.role === filter);
+  const visibleEmployees = employees.filter(e => {
+    const matchesFilter = filter === "All" ? true : e.role === filter;
+    const matchesSearch = e.name.toLowerCase().includes(search.toLowerCase()) || 
+                          e.email.toLowerCase().includes(search.toLowerCase());
+    return matchesFilter && matchesSearch;
+  });
 
   return (
     <div className="p-6 lg:p-8 max-w-7xl mx-auto">
@@ -78,38 +119,49 @@ export default function EmployeesPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           <input
             placeholder="Search team…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
             className="h-8 w-full md:w-64 rounded-full border border-border bg-card pl-8 pr-4 text-xs text-foreground placeholder:text-muted-foreground outline-none focus:ring-2 focus:ring-accent transition"
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        {visibleEmployees.map((emp) => (
-          <EntityCard
-            key={emp.id}
-            initials={emp.initials}
-            title={emp.name}
-            subtitle={emp.position}
-            badge={{ 
-              label: emp.role, 
-              color: roleColors[emp.role] || "bg-gray-50 text-gray-700 ring-gray-600/20",
-              options: roleOptions,
-              onValueChange: (val) => updateRole(emp.id, val)
-            }}
-            meta={[
-              { icon: Mail,         label: emp.email },
-              { icon: ShieldAlert,  label: `Access: ${emp.role} Level` },
-              { icon: MonitorPlay,  label: `Last Login: ${emp.lastLogin}` },
-            ]}
-            onClick={() => {}}
-          />
-        ))}
-        {visibleEmployees.length === 0 && (
-          <div className="col-span-full py-12 text-center text-muted-foreground">
-            No employees found for the selected filter.
-          </div>
-        )}
-      </div>
+      {loading ? (
+        <div className="w-full py-20 flex justify-center items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {visibleEmployees.map((emp) => {
+            const initials = emp.name.split(" ").map((n: string) => n[0]).join("").toUpperCase().substring(0, 2);
+            return (
+              <EntityCard
+                key={emp.id}
+                initials={initials}
+                title={emp.name}
+                subtitle={emp.designation || "Staff"}
+                badge={{ 
+                  label: emp.role, 
+                  color: roleColors[emp.role] || "bg-gray-50 text-gray-700 ring-gray-600/20",
+                  options: roleOptions,
+                  onValueChange: (val) => updateRole(emp.id, val)
+                }}
+                meta={[
+                  { icon: Mail,         label: emp.email },
+                  { icon: ShieldAlert,  label: `Access: ${emp.role} Level` },
+                  { icon: MonitorPlay,  label: emp.last_login ? `Last Login: ${new Date(emp.last_login).toLocaleDateString()}` : "Last Login: Never" },
+                ]}
+                onClick={() => {}}
+              />
+            )
+          })}
+          {visibleEmployees.length === 0 && (
+            <div className="col-span-full py-12 text-center text-muted-foreground">
+              No employees found.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Add Employee Modal */}
       {isModalOpen && (
@@ -197,8 +249,8 @@ export default function EmployeesPage() {
                 <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">
-                  Create Employee
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating..." : "Create Employee"}
                 </Button>
               </div>
             </form>

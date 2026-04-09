@@ -45,6 +45,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${outfit.variable} ${geistSans.variable} ${geistMono.variable} h-full bg-background antialiased`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body className="flex h-full overflow-hidden text-foreground">
