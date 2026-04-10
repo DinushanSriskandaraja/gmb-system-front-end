@@ -2,7 +2,9 @@ import { FileText, Plus, File, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCustomer, getCustomerJobs } from "@/lib/data";
+import { getCustomerById } from "@/lib/db/customers";
+import { getEnquiries } from "@/lib/db/enquiries";
+import { getActivities } from "@/lib/db/activities";
 import { ContactDetailsCard } from "@/components/customers/ContactDetailsCard";
 import { ActivityCard } from "@/components/customers/ActivityCard";
 import { ActiveJobCard } from "@/components/customers/ActiveJobCard";
@@ -14,16 +16,42 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
   const { id } = await params;
   const { from } = await searchParams;
   const fromJob = from === "job";
-  const customer = getCustomer(id);
-  const jobs = getCustomerJobs(id);
+  
+  let customer;
+  let enquiries: any[] = [];
+  let activities: any[] = [];
+  
+  try {
+    customer = await getCustomerById(id);
+    enquiries = await getEnquiries(id);
+    activities = await getActivities(id);
+  } catch (error) {
+    console.error("Error fetching customer profile data:", error);
+  }
 
   if (!customer) {
     notFound();
   }
+  
+  // Transform DB model to match existing UI properties
+  const jobs = enquiries.filter(e => e.is_job).map(e => ({
+    id: e.id,
+    customerId: e.customer_id,
+    status: e.status,
+    date: new Date(e.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    type: "Various", // Could map from connected products
+    location: "Default"
+  }));
+
+  const customerUiModel = {
+    ...customer,
+    initials: customer.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
+    hasJob: jobs.length > 0,
+    jobId: jobs.length > 0 ? jobs[0].id : undefined
+  };
 
   const generatedFiles = [
     { id: "f1", name: "Measurement_Sheet_v1.pdf", type: "PDF", date: "Oct 14, 2026", size: "2.4 MB" },
-    { id: "f1", name: "Paperwork_V1.pdf", type: "PDF", date: "Oct 14, 2026", size: "2.4 MB" },
     { id: "f2", name: "Quote_Q-0042.pdf", type: "PDF", date: "Oct 15, 2026", size: "1.1 MB" },
     { id: "f3", name: "Invoice_INV-0042.pdf", type: "PDF", date: "Oct 18, 2026", size: "0.8 MB" },
   ];
@@ -39,16 +67,16 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xl font-bold text-accent">
-              {customer.initials}
+              {customerUiModel.initials}
             </span>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">{customer.name}</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">{customerUiModel.name}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <span className="inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/30">
-                  {customer.status}
+                  {customerUiModel.status}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  ID: {fromJob && customer.hasJob ? customer.jobId : `CUST-${customer.id.padStart(4, "0")}`}
+                  ID: {fromJob && customerUiModel.hasJob ? customerUiModel.jobId.substring(0, 8) : `CUST-${customerUiModel.customer_id.substring(0, 8)}`}
                 </span>
               </div>
             </div>
@@ -62,13 +90,13 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
         {/* Left Column: Details */}
         <div className="md:col-span-1 flex flex-col gap-6">
           <ActiveJobCard jobs={jobs} />
-          <ContactDetailsCard customer={customer} />
-          <ActivityCard customer={customer} />
+          <ContactDetailsCard customer={customerUiModel} />
+          <ActivityCard customer={customerUiModel} activities={activities} />
         </div>
 
         {/* Right Column: Files & Jobs */}
         <div className="md:col-span-2 flex flex-col gap-6">
-          <GeneratedFilesList customer={customer} generatedFiles={generatedFiles} />
+          <GeneratedFilesList customer={customerUiModel} generatedFiles={generatedFiles} />
           <UploadSection />
         </div>
       </div>
