@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
+import { ClientInfo } from "@/types/measurements";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

@@ -290,7 +290,7 @@ export function ProductForm({ onClose, onSave, categories, initialData }: Produc
                 <select
                   className="w-full h-11 bg-muted/30 border border-border rounded-xl px-4 text-sm outline-none focus:ring-2 focus:ring-accent transition appearance-none"
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value as "Active" | "Inactive" })}
                 >
                   <option value="Active">Active</option>
                   <option value="Inactive">Inactive</option>
@@ -334,7 +334,7 @@ export function ProductForm({ onClose, onSave, categories, initialData }: Produc
                 <select
                   className="w-full h-11 bg-muted/30 border border-border rounded-xl px-4 text-sm outline-none focus:ring-2 focus:ring-accent transition appearance-none"
                   value={formData.unit}
-                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, unit: e.target.value as "m" | "mm" | "cm" | "count" })}
                 >
                   <option value="m">Meter (m)</option>
                   <option value="mm">Millimeter (mm)</option>
