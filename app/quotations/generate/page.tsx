@@ -16,15 +16,19 @@ const mockSheets: Record<string, {
   address: string;
   phoneNo: string;
   date: string;
-  locations: { locationName: string; coverings: { coveringType: string; qty: number; inWidth: number; inDrop: number; outWidth: number; outDrop: number; productNote: string }[] }[];
+  locations: { locationName: string; coverings: {
+    coveringType: string; qty: number; inWidth: number; inDrop: number; outWidth: number; outDrop: number; productNote: string;
+    style?: string; opening?: string; control?: string; controlSide?: string; componentsDetails?: string; componentsColour?: string;
+    coverageWidthWise?: string; coverageDropWise?: string; mountingPoint?: string; surface?: string; bracketType?: string; bracketColour?: string; note?: string;
+  }[] }[];
 }> = {
   "1": {
     jobNo: "J-1001", customerName: "John & Sarah Doe",
     address: "42 Oakwood Drive, Glen Waverley VIC 3150", phoneNo: "+61 412 345 678",
     date: "2024-03-20",
     locations: [
-      { locationName: "Master Bedroom", coverings: [{ coveringType: "Roller Blinds", qty: 2, inWidth: 1800, inDrop: 2100, outWidth: 1850, outDrop: 2150, productNote: "Blockout fabric" }] },
-      { locationName: "Living Room",    coverings: [{ coveringType: "Curtain",       qty: 1, inWidth: 3200, inDrop: 2700, outWidth: 3300, outDrop: 2750, productNote: "S-Fold sheer" }] },
+      { locationName: "Master Bedroom", coverings: [{ coveringType: "Roller Blinds", qty: 2, inWidth: 1800, inDrop: 2100, outWidth: 1850, outDrop: 2150, productNote: "Blockout fabric", style: "Standard", control: "Chain", controlSide: "Left", mountingPoint: "Face", bracketType: "Standard", bracketColour: "White" }] },
+      { locationName: "Living Room",    coverings: [{ coveringType: "Curtain",       qty: 1, inWidth: 3200, inDrop: 2700, outWidth: 3300, outDrop: 2750, productNote: "S-Fold sheer", opening: "Center", control: "Wand", mountingPoint: "Ceiling", bracketType: "Track", bracketColour: "Silver" }] },
     ],
   },
   "2": {
@@ -89,12 +93,31 @@ function buildQuotationFromSheet(sheetId: string): Quotation | null {
         qty: cov.qty,
         unitPrice: 0, // to be filled by user
         total: 0,
+        discount: 0,
+        perQtyAvgPrice: 0,
+        bestPrice: 0,
+        percentage: 0,
         measurements: {
           label: loc.locationName,
           width: cov.outWidth,
           height: cov.outDrop,
           unit: "mm" as const,
         },
+        installationDetails: {
+          style: cov.style,
+          opening: cov.opening,
+          control: cov.control,
+          controlSide: cov.controlSide,
+          componentsDetails: cov.componentsDetails,
+          componentsColour: cov.componentsColour,
+          coverageWidthWise: cov.coverageWidthWise,
+          coverageDropWise: cov.coverageDropWise,
+          mountingPoint: cov.mountingPoint,
+          surface: cov.surface,
+          bracketType: cov.bracketType,
+          bracketColour: cov.bracketColour,
+          note: cov.note,
+        }
       };
     })
   );
@@ -116,7 +139,17 @@ function buildQuotationFromSheet(sheetId: string): Quotation | null {
     total: 0,
     status: "Draft",
     notes: `Generated from measurement sheet ${sheet.jobNo}.`,
-    terms: "Quotation valid for 30 days. 50% deposit required to commence manufacturing.",
+    terms: "GMB Curtains & Blinds – Terms & Conditions\n\nThank you for choosing GMB Curtains & Blinds (“GMB”).\n\nThese Terms & Conditions outline the agreement between GMB and the Customer for the supply, manufacture, and installation of window furnishings and related services.\nBy accepting a quotation, making a payment, or proceeding with an order, the Customer acknowledges that they have read, understood, and agreed to be bound by these Terms & Conditions.\nThese Terms apply to all products and services provided by GMB unless otherwise agreed in writing.\n\n1) General Conditions :-\n1.1 These Terms & Conditions apply to all Products supplied and Services provided by GMB Curtains & Blinds (“GMB”).\n1.2 Acceptance of a Quotation, payment of a Deposit, or confirmation of an Order constitutes full acceptance of these Terms & Conditions by the Customer.\n1.3 Only written confirmation from GMB will be valid. Verbal discussions or informal promises will not apply unless confirmed in writing.\n1.4 These Terms & Conditions, together with the accepted Quotation and/or written Order Confirmation, form the full agreement between GMB and the Customer. Any previous discussions or agreements will not apply.",
+    paymentMethod: "Bank Transfer",
+    paymentSchedule: {
+      deposit: 0,
+      payment1: 0,
+      payment2: 0,
+      payment3: 0,
+      payment4: 0,
+      balance: 0,
+      balanceStatus: "Pending"
+    }
   };
 }
 

@@ -78,15 +78,15 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
 
       // 4. Update the enquiry status
       if (quote.enquiry_id) {
-        await updateEnquiry(quote.enquiry_id, { 
-          is_job: true, 
-          status: 'Job Created' 
+        await updateEnquiry(quote.enquiry_id, {
+          is_job: true,
+          status: 'Job Created'
         });
       }
 
       alert("Payment successful! Job created and payment recorded.");
       setModalMode(null);
-      router.refresh(); 
+      router.refresh();
     } catch (err: any) {
       alert("Payment failed: " + err.message);
     } finally {
@@ -105,7 +105,7 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
           <FileText className="mr-2 h-4 w-4" />
           Generate Quote
         </Button>
-        
+
         {!hasJob && (
           <Button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => setModalMode("payment")}>
             <CreditCard className="mr-2 h-4 w-4" />
@@ -126,9 +126,9 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-lg animate-in fade-in zoom-in duration-200">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-semibold text-foreground">
-                {modalMode === "quote" ? "Generate Quote" : 
-                 modalMode === "paperwork" ? "Generate Paperwork" : 
-                 "Select Quotation for Payment"}
+                {modalMode === "quote" ? "Generate Quote" :
+                  modalMode === "paperwork" ? "Generate Paperwork" :
+                    "Select Quotation for Payment"}
               </h2>
               <button onClick={() => setModalMode(null)} className="text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
@@ -144,7 +144,7 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
                       <Loader2 className="h-4 w-4 animate-spin" /> Loading quotes...
                     </div>
                   ) : (
-                    <select 
+                    <select
                       value={selectedQuote}
                       onChange={(e) => setSelectedQuote(e.target.value)}
                       className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus:ring-2 focus:ring-accent outline-none"
@@ -156,7 +156,7 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
                         </option>
                       ))}
                       {quotations.length === 0 && modalMode === "payment" && (
-                         <option value="dummy" disabled>No quotations found for this customer</option>
+                        <option value="dummy" disabled>No quotations found for this customer</option>
                       )}
                     </select>
                   )}
@@ -183,8 +183,8 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
 
             <div className="mt-8 flex justify-end gap-3">
               <Button variant="outline" onClick={() => setModalMode(null)}>Cancel</Button>
-              <Button 
-                disabled={loading || (modalMode === "payment" && (!selectedQuote || quotations.length === 0))} 
+              <Button
+                disabled={loading || (modalMode === "payment" && (!selectedQuote || quotations.length === 0))}
                 onClick={modalMode === "payment" ? handleMakePayment : () => {
                   alert(`Successfully generated!`);
                   setModalMode(null);

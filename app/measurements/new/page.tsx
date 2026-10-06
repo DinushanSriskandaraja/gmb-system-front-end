@@ -1,9 +1,14 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ArrowLeft } from "lucide-react";
+import { 
+  ArrowLeft, User, Ruler, CheckCircle, Home, ClipboardList, 
+  FileText, MapPin, Plus, ChevronRight, ChevronDown, Copy, Trash2, Save, 
+  Maximize2, AppWindow, Wrench, AlertCircle, Layers
+} from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/Button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -566,6 +571,43 @@ export default function NewMeasurementPage() {
     setClientInfo(prev => ({ ...prev, [field]: val }));
   };
 
+  const { clientName, clientAddress, customer, email, contactNumber, jobId, date, dateTime, jobType, jobHardness, numberOfInstallers, installationTimeframe, measuredOrder, checkMeasurements, windowsStats, houseType, parkingFlexibility, pets, floorStates, clearances, damageHoles, existingCovering, findUs, customerOrigin, colourTheme, explainProduct, clientUnderstandsLevel, fabricSelection, componentsSelection, changesToGetDeposit, measurementsNote, installationNote, productNote, photos } = clientInfo;
+
+  const setClientName = (v: string) => updateClientInfo("clientName", v);
+  const setClientAddress = (v: string) => updateClientInfo("clientAddress", v);
+  const setCustomer = (v: string) => updateClientInfo("customer", v);
+  const setEmail = (v: string) => updateClientInfo("email", v);
+  const setContactNumber = (v: string) => updateClientInfo("contactNumber", v);
+  const setJobId = (v: string) => updateClientInfo("jobId", v);
+  const setDate = (v: string) => updateClientInfo("date", v);
+  const setDateTime = (v: string) => updateClientInfo("dateTime", v);
+  const setJobType = (v: string) => updateClientInfo("jobType", v);
+  const setJobHardness = (v: string) => updateClientInfo("jobHardness", v);
+  const setNumberOfInstallers = (v: string) => updateClientInfo("numberOfInstallers", v);
+  const setInstallationTimeframe = (v: string) => updateClientInfo("installationTimeframe", v);
+  const setMeasuredOrder = (v: string) => updateClientInfo("measuredOrder", v);
+  const setCheckMeasurements = (v: string) => updateClientInfo("checkMeasurements", v);
+  const setWindowsStats = (v: string) => updateClientInfo("windowsStats", v);
+  const setHouseType = (v: string) => updateClientInfo("houseType", v);
+  const setParkingFlexibility = (v: string) => updateClientInfo("parkingFlexibility", v);
+  const setPets = (v: string) => updateClientInfo("pets", v);
+  const setFloorStates = (v: string) => updateClientInfo("floorStates", v);
+  const setClearances = (v: string) => updateClientInfo("clearances", v);
+  const setDamageHoles = (v: string) => updateClientInfo("damageHoles", v);
+  const setExistingCovering = (v: string) => updateClientInfo("existingCovering", v);
+  const setFindUs = (v: string) => updateClientInfo("findUs", v);
+  const setCustomerOrigin = (v: string) => updateClientInfo("customerOrigin", v);
+  const setColourTheme = (v: string) => updateClientInfo("colourTheme", v);
+  const setExplainProduct = (v: string) => updateClientInfo("explainProduct", v);
+  const setClientUnderstandsLevel = (v: string) => updateClientInfo("clientUnderstandsLevel", v);
+  const setFabricSelection = (v: string) => updateClientInfo("fabricSelection", v);
+  const setComponentsSelection = (v: string) => updateClientInfo("componentsSelection", v);
+  const setChangesToGetDeposit = (v: string) => updateClientInfo("changesToGetDeposit", v);
+  const setMeasurementsNote = (v: string) => updateClientInfo("measurementsNote", v);
+  const setInstallationNote = (v: string) => updateClientInfo("installationNote", v);
+  const setProductNote = (v: string) => updateClientInfo("productNote", v);
+  const setPhotos = (v: string) => updateClientInfo("photos", v);
+
   // ── Step 2: Window Measurements ────────────────────────────────────────────
   const [locations, setLocations] = useState<WindowLocation[]>([newLocation(1)]);
   const [nextLocId, setNextLocId] = useState(2);
@@ -1017,7 +1059,7 @@ export default function NewMeasurementPage() {
             <p className="text-sm text-muted-foreground mt-1">Record site dimensions and specifications.</p>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Step Indicator */}
       <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2 no-scrollbar">

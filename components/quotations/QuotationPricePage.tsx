@@ -62,11 +62,13 @@ export function QuotationPricePage({
 
       {/* Pricing Table */}
       <div className="mb-12">
-        <div className="grid grid-cols-12 gap-4 border-b-2 border-gray-900 px-2 py-3 text-[10px] font-black uppercase tracking-widest text-gray-500">
+        <div className="grid grid-cols-12 gap-2 border-b-2 border-gray-900 px-2 py-3 text-[9px] font-black uppercase tracking-widest text-gray-500 text-center">
           <div className="col-span-1">QTY</div>
-          <div className="col-span-6">DESCRIPTION & SPECIFICATIONS</div>
-          <div className="col-span-2 text-right">UNIT PRICE</div>
-          <div className="col-span-3 text-right">TOTAL</div>
+          <div className="col-span-4 text-left">PRODUCT & LOCATION</div>
+          <div className="col-span-1 text-right">PRICE</div>
+          <div className="col-span-2 text-right">DISCOUNT</div>
+          <div className="col-span-2 text-right">BEST PRICE</div>
+          <div className="col-span-2 text-right">AMOUNT</div>
         </div>
 
         <div className="divide-y divide-gray-100">
@@ -83,14 +85,14 @@ export function QuotationPricePage({
                     />
                   ) : item.qty}
                 </div>
-                <div className="col-span-6">
+                <div className="col-span-4">
                   {isEditing ? (
                     <div className="space-y-3">
                        <input 
                         className="w-full font-bold text-sm bg-gray-50 p-2 rounded-lg outline-none border border-transparent focus:border-primary"
                         value={item.name}
                         onChange={e => updateItem(item.id, { name: e.target.value })}
-                        placeholder="Product Name"
+                        placeholder="Product Type"
                       />
                       <input 
                         className="w-full text-xs text-primary font-bold bg-blue-50/50 p-2 rounded-lg outline-none border border-transparent focus:border-primary uppercase tracking-tighter"
@@ -114,7 +116,7 @@ export function QuotationPricePage({
                     </>
                   )}
                 </div>
-                <div className="col-span-2 text-right font-mono text-sm pt-2 text-gray-600">
+                <div className="col-span-1 text-right font-mono text-sm pt-2 text-gray-600">
                   {isEditing ? (
                     <input 
                       type="number"
@@ -124,8 +126,37 @@ export function QuotationPricePage({
                     />
                   ) : `$${item.unitPrice.toFixed(2)}`}
                 </div>
-                <div className="col-span-3 text-right font-mono text-xl font-black pt-1.5 text-gray-900">
-                  ${(item.qty * item.unitPrice).toFixed(2)}
+                <div className="col-span-2 text-right font-mono text-sm pt-2 text-gray-600">
+                  {isEditing ? (
+                    <div className="flex flex-col gap-1 items-end">
+                      <input 
+                        type="number"
+                        placeholder="Discount $"
+                        className="w-full bg-gray-50 rounded-lg p-2 text-right outline-none border border-transparent focus:border-primary"
+                        value={item.discount || ''}
+                        onChange={e => updateItem(item.id, { discount: parseFloat(e.target.value) || 0 })}
+                      />
+                      <span className="text-[10px]">Avg Price: ${(item.perQtyAvgPrice || 0).toFixed(2)}</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-end">
+                      <span>${(item.discount || 0).toFixed(2)}</span>
+                      <span className="text-[9px] text-gray-400 mt-1">Avg: ${(item.perQtyAvgPrice || 0).toFixed(2)}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="col-span-2 text-right font-mono text-sm pt-2 text-gray-900 font-bold">
+                  {isEditing ? (
+                    <input 
+                      type="number"
+                      className="w-full bg-gray-50 rounded-lg p-2 text-right outline-none border border-transparent focus:border-primary"
+                      value={item.bestPrice || ''}
+                      onChange={e => updateItem(item.id, { bestPrice: parseFloat(e.target.value) || 0 })}
+                    />
+                  ) : `$${(item.bestPrice || 0).toFixed(2)}`}
+                </div>
+                <div className="col-span-2 text-right font-mono text-xl font-black pt-1.5 text-gray-900">
+                  ${(item.qty * (item.bestPrice || item.unitPrice)).toFixed(2)}
                 </div>
 
                 {isEditing && (
@@ -152,42 +183,108 @@ export function QuotationPricePage({
 
       {/* Pricing Footer */}
       <div className="grid grid-cols-12 gap-8 pt-12 border-t-2 border-primary/10 mb-12">
-        <div className="col-span-7">
-          <div className="bg-gray-50/50 p-8 rounded-3xl border border-gray-100 flex items-center gap-6">
-            <div className="h-12 w-12 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
-              <FileText className="h-6 w-6" />
+        <div className="col-span-7 space-y-6">
+          <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100 flex items-start gap-6">
+            <div className="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center shrink-0 shadow-lg shadow-primary/20">
+              <FileText className="h-5 w-5" />
             </div>
-            <p className="text-[11px] text-gray-500 italic leading-relaxed">
-              This quotation is valid for 30 days. Please refer to the **Measurement & Specification Sheet** on the following page for technical details, fabric selections, and installation requirements.
-            </p>
+            <div className="text-[10px] text-gray-500 leading-relaxed space-y-2 font-medium">
+              <p className="font-bold text-gray-700">GOOGLE REVIEWS REFLECTS OUR QUALITY & WORKMANSHIP</p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>We use quality components.</li>
+                <li>Refer a friend and receive a $100 GIFT CARD (minimum sales: $1800).</li>
+                <li>Child safety is our priority - please visit Google for more information.</li>
+                <li>Please note a surcharge of 1% applies on credit card payments.</li>
+                <li>A 50% Deposit is required at the time of order & the balance 50% Payment need to be completed 2 days before installation.</li>
+                <li>Any payment made to GMB Curtains and Blinds constitutes acceptance of our Terms and Conditions.</li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="bg-gray-900 p-6 rounded-2xl text-white space-y-4">
+            <h4 className="text-xs font-black uppercase tracking-widest text-gray-400 border-b border-gray-700 pb-2">Bank Details</h4>
+            <div className="flex justify-between items-center text-sm font-mono">
+              <span className="text-gray-400">Pay to:</span>
+              <span className="font-bold">GMB window coverings</span>
+            </div>
+            <div className="flex justify-between items-center text-sm font-mono">
+              <span className="text-gray-400">Combank:</span>
+              <span className="font-bold text-primary">BSB-063595 Acc No-10866411</span>
+            </div>
           </div>
         </div>
         <div className="col-span-5">
           <div className="space-y-3">
             <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
-              <span>Subtotal</span>
-              <span className="font-mono text-gray-900">${subtotal.toFixed(2)}</span>
+              <span>Final Total</span>
+              <span className="font-mono text-gray-900 text-lg">${total.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
-              <span>GST (10%)</span>
-              <span className="font-mono text-gray-900">${tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
-              <span>Installation</span>
-              <span className="font-mono text-gray-900">
+            
+            <div className="mt-6 pt-6 border-t border-gray-100 space-y-4">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2">Payment Schedule</h4>
+              
+              <div className="flex justify-between text-sm font-bold items-center">
+                <span className="text-gray-600">Deposit (50%)</span>
+                <span className="font-mono text-gray-900">
+                  {isEditing ? (
+                    <input 
+                      type="number"
+                      className="bg-gray-50 rounded-lg px-2 py-1 w-24 text-right outline-none border border-transparent focus:border-primary"
+                      value={quote.paymentSchedule?.deposit || 0}
+                      onChange={e => setQuote({...quote, paymentSchedule: {...quote.paymentSchedule, deposit: parseFloat(e.target.value) || 0}})}
+                    />
+                  ) : `$${(quote.paymentSchedule?.deposit || 0).toFixed(2)}`}
+                </span>
+              </div>
+              
+              {["payment1", "payment2", "payment3", "payment4"].map((p, i) => (
+                <div key={p} className="flex justify-between text-xs items-center">
+                  <span className="text-gray-500">Payment {i + 1}</span>
+                  <span className="font-mono text-gray-700">
+                    {isEditing ? (
+                      <input 
+                        type="number"
+                        className="bg-gray-50 rounded-lg px-2 py-1 w-24 text-right outline-none border border-transparent focus:border-primary"
+                        value={(quote.paymentSchedule as any)?.[p] || ''}
+                        onChange={e => setQuote({...quote, paymentSchedule: {...quote.paymentSchedule, [p]: parseFloat(e.target.value) || 0}})}
+                        placeholder="0.00"
+                      />
+                    ) : (quote.paymentSchedule as any)?.[p] ? `$${((quote.paymentSchedule as any)?.[p]).toFixed(2)}` : "-"}
+                  </span>
+                </div>
+              ))}
+              
+              <div className="flex justify-between text-sm font-bold items-center border-t-2 border-gray-900 pt-3">
+                <span className="text-gray-900">Balance</span>
+                <span className="font-mono text-xl text-primary">
+                  {isEditing ? (
+                    <input 
+                      type="number"
+                      className="bg-gray-50 rounded-lg px-2 py-1 w-32 text-right outline-none border border-transparent focus:border-primary"
+                      value={quote.paymentSchedule?.balance || 0}
+                      onChange={e => setQuote({...quote, paymentSchedule: {...quote.paymentSchedule, balance: parseFloat(e.target.value) || 0}})}
+                    />
+                  ) : `$${(quote.paymentSchedule?.balance || 0).toFixed(2)}`}
+                </span>
+              </div>
+              
+              <div className="flex justify-between items-center text-xs mt-2">
+                <span className="text-gray-400">Balance Status</span>
                 {isEditing ? (
-                  <input 
-                    type="number"
-                    className="bg-gray-50 rounded-lg px-2 w-24 text-right outline-none border border-transparent focus:border-primary"
-                    value={quote.installationFee}
-                    onChange={e => setQuote({...quote, installationFee: parseFloat(e.target.value) || 0})}
-                  />
-                ) : `$${(quote.installationFee || 0).toFixed(2)}`}
-              </span>
-            </div>
-            <div className="flex justify-between border-t-4 border-gray-900 pt-6 mt-6">
-              <span className="text-xl font-black uppercase tracking-tighter text-gray-900">GRAND TOTAL</span>
-              <span className="text-4xl font-black text-primary font-mono tracking-tighter">${total.toFixed(2)}</span>
+                  <select 
+                    className="bg-gray-50 rounded-lg px-2 py-1 outline-none text-right font-bold text-gray-700"
+                    value={quote.paymentSchedule?.balanceStatus || "Pending"}
+                    onChange={e => setQuote({...quote, paymentSchedule: {...quote.paymentSchedule, balanceStatus: e.target.value}})}
+                  >
+                    <option>Pending</option>
+                    <option>Paid</option>
+                  </select>
+                ) : (
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${quote.paymentSchedule?.balanceStatus === "Paid" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                    {quote.paymentSchedule?.balanceStatus || "Pending"}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>

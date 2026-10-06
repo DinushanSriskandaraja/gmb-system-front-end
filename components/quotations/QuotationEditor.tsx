@@ -6,6 +6,7 @@ import { Quotation, QuotationItem } from "@/lib/quotations";
 import { QuotationToolbar } from "./QuotationToolbar";
 import { QuotationPricePage } from "./QuotationPricePage";
 import { QuotationTechnicalPage } from "./QuotationTechnicalPage";
+import { QuotationTermsPage } from "./QuotationTermsPage";
 
 type QuotationStatus = "Draft" | "Sent" | "Accepted" | "Rejected";
 
@@ -164,6 +165,12 @@ export function QuotationEditor({
             isEditing={isEditing}
             setQuote={setQuote}
             updateItem={updateItem}
+          />
+          
+          <QuotationTermsPage
+            quote={quote}
+            isEditing={isEditing}
+            setQuote={setQuote}
           />
         </div>
       </div>
