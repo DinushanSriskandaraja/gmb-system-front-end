@@ -13,6 +13,32 @@ export interface Fabric {
   code?: string;
 }
 
+export interface InstallationDetails {
+  style?: string;
+  opening?: string;
+  control?: string;
+  controlSide?: string;
+  componentsDetails?: string;
+  componentsColour?: string;
+  coverageWidthWise?: string;
+  coverageDropWise?: string;
+  mountingPoint?: string;
+  surface?: string;
+  bracketType?: string;
+  bracketColour?: string;
+  note?: string;
+}
+
+export interface PaymentSchedule {
+  deposit?: number;
+  payment1?: number;
+  payment2?: number;
+  payment3?: number;
+  payment4?: number;
+  balance?: number;
+  balanceStatus?: string;
+}
+
 export interface QuotationItem {
   id: string;
   name: string;
@@ -21,8 +47,13 @@ export interface QuotationItem {
   qty: number;
   unitPrice: number;
   total: number;
+  discount?: number;
+  perQtyAvgPrice?: number;
+  bestPrice?: number;
+  percentage?: number;
   measurements?: Measurement;
   fabric?: Fabric;
+  installationDetails?: InstallationDetails;
   options?: Record<string, string>;
 }
 
@@ -45,6 +76,8 @@ export interface Quotation {
   status: 'Draft' | 'Sent' | 'Accepted' | 'Rejected';
   notes?: string;
   terms?: string;
+  paymentMethod?: string;
+  paymentSchedule?: PaymentSchedule;
 }
 
 export const mockQuotations: Record<string, Quotation> = {
@@ -117,7 +150,13 @@ export const mockQuotations: Record<string, Quotation> = {
     total: 1107.00,
     status: 'Sent',
     notes: "Please confirm measurements before proceeding with order production.",
-    terms: "Quotation valid for 30 days. 50% deposit required to commence manufacturing."
+    terms: "Quotation valid for 30 days. 50% deposit required to commence manufacturing.",
+    paymentMethod: "Bank Transfer",
+    paymentSchedule: {
+      deposit: 553.50,
+      balance: 553.50,
+      balanceStatus: "Pending"
+    }
   }
 };
 

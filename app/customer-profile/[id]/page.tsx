@@ -11,20 +11,25 @@ import { ActiveJobCard } from "@/components/customers/ActiveJobCard";
 import { GeneratedFilesList } from "@/components/customers/GeneratedFilesList";
 import { UploadSection } from "@/components/customers/UploadSection";
 import { CustomerActionButtons } from "@/components/customers/CustomerActionButtons";
+import { getQuotationsByCustomerId } from "@/lib/db/quotations";
 
 export default async function CustomerProfilePage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ from?: string }> }) {
   const { id } = await params;
   const { from } = await searchParams;
   const fromJob = from === "job";
-  
+
   let customer;
   let enquiries: any[] = [];
   let activities: any[] = [];
-  
+  let quotations: any[] = [];
+
   try {
     customer = await getCustomerById(id);
     enquiries = await getEnquiries(id);
     activities = await getActivities(id);
+    const customerQuotations = await getQuotationsByCustomerId(id);
+    // Transform or pass directly
+    quotations = customerQuotations;
   } catch (error) {
     console.error("Error fetching customer profile data:", error);
   }
@@ -32,7 +37,7 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
   if (!customer) {
     notFound();
   }
-  
+
   // Transform DB model to match existing UI properties
   const jobs = enquiries.filter(e => e.is_job).map(e => ({
     id: e.id,
@@ -82,7 +87,10 @@ export default async function CustomerProfilePage({ params, searchParams }: { pa
             </div>
           </div>
 
-          <CustomerActionButtons />
+          <CustomerActionButtons
+            customerId={customerUiModel.customer_id}
+            hasJob={customerUiModel.hasJob}
+          />
         </div>
       </div>
 

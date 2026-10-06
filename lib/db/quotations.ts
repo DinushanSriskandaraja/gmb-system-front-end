@@ -7,7 +7,17 @@ export const getQuotations = async () => {
     customer:customers ( name ),
     items:quotation_items ( * )
   `).order('created_at', { ascending: false });
-  
+
+  if (error) throw error;
+  return data;
+};
+
+export const getQuotationsByCustomerId = async (customerId: string) => {
+  const { data, error } = await supabase.from('quotations').select(`
+    *,
+    items:quotation_items ( * )
+  `).eq('customer_id', customerId).order('created_at', { ascending: false });
+
   if (error) throw error;
   return data;
 };
@@ -18,7 +28,7 @@ export const getQuotationById = async (id: string) => {
     customer:customers ( * ),
     items:quotation_items ( *, product:products_catalog ( item_name, unit ) )
   `).eq('id', id).single();
-  
+
   if (error) throw error;
   return data;
 };
@@ -43,7 +53,7 @@ export const createQuotation = async (
 };
 
 export const updateQuotation = async (
-  id: string, 
+  id: string,
   updates: Partial<Omit<Quotation, 'id' | 'created_at' | 'updated_at'>>
 ) => {
   const { data, error } = await supabase.from('quotations').update(updates).eq('id', id).select().single();
