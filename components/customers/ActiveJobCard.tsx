@@ -4,7 +4,7 @@ export function ActiveJobCard({ jobs }: { jobs: any[] }) {
   if (!jobs || jobs.length === 0) return null;
   return (
     <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
-      <h3 className="text-sm font-semibold mb-4 text-foreground">All Past Jobs</h3>
+      <h3 className="text-sm font-semibold mb-4 text-foreground">Enquiries / Jobs</h3>
       <div className="space-y-6">
         {jobs.map((job) => (
           <div key={job.id} className="space-y-4 pb-4 border-b border-border last:border-0 last:pb-0">

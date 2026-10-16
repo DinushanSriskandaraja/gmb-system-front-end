@@ -49,7 +49,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex h-full overflow-hidden text-foreground">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light">
           <Sidebar />
           <div className="flex flex-1 flex-col overflow-hidden">
             <Header />

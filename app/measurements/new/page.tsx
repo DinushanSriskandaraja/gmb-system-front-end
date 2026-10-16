@@ -1,15 +1,19 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, Suspense, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { getCustomerById } from "@/lib/db/customers";
+import { createMeasurement, getMeasurementById } from "@/lib/db/measurements";
 import { 
   ArrowLeft, User, Ruler, CheckCircle, Home, ClipboardList, 
   FileText, MapPin, Plus, ChevronRight, ChevronDown, Copy, Trash2, Save, 
-  Maximize2, AppWindow, Wrench, AlertCircle, Layers
+  Maximize2, AppWindow, Wrench, AlertCircle, Layers, Eye
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { ClientInfo } from "@/types/measurements";
+import { DocumentPreviewModal } from "@/components/customers/DocumentPreviewModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -112,7 +116,7 @@ function SectionCard({ icon: Icon, title, defaultExpanded = true, color = "accen
   return (
     <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
       <div
-        className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/20 cursor-pointer hover:bg-muted/30 transition-colors"
+        className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/20 cursor-pointer hover:bg-muted/30 transition-colors pointer-events-auto"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-3">
@@ -229,7 +233,7 @@ function CoveringForm({
       }`}>
       {/* Covering Header */}
       <div
-        className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-muted/10 transition-colors"
+        className="flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-muted/10 transition-colors pointer-events-auto"
         onClick={() => setExpanded(e => !e)}
       >
         <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${typeColor === "purple" ? "bg-purple-500/15 text-purple-500" :
@@ -273,7 +277,7 @@ function CoveringForm({
             className="overflow-hidden border-t border-border/50"
           >
             {/* Tabs Navigation */}
-            <div className="flex overflow-x-auto no-scrollbar border-b border-border bg-muted/5 px-4 pt-1">
+            <div className="flex overflow-x-auto no-scrollbar border-b border-border bg-muted/5 px-4 pt-1 pointer-events-auto">
               {tabs.map(t => (
                 <button
                   key={t.id}
@@ -526,8 +530,35 @@ function CoveringForm({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function NewMeasurementPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading...</div>}>
+      <MeasurementPageContent />
+    </Suspense>
+  );
+}
+
+export function MeasurementPageContent({ 
+  measurementId, 
+  isReadOnly = false,
+  passedCustomerId,
+  passedJobId,
+  onSaveSuccess,
+  onCancel
+}: { 
+  measurementId?: string, 
+  isReadOnly?: boolean,
+  passedCustomerId?: string | null,
+  passedJobId?: string | null,
+  onSaveSuccess?: () => void,
+  onCancel?: () => void
+} = {}) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const customerId = passedCustomerId || searchParams.get('customerId');
+  const queryJobId = passedJobId || searchParams.get('jobId');
   // ── Step state ─────────────────────────────────────────────────────────────
   const [step, setStep] = useState<1 | 2>(1);
+  const [showPreview, setShowPreview] = useState(false);
 
   const [clientInfo, setClientInfo] = useState<ClientInfo>({
     customerType: "New",
@@ -571,6 +602,30 @@ export default function NewMeasurementPage() {
   const updateClientInfo = (field: keyof ClientInfo, val: any) => {
     setClientInfo(prev => ({ ...prev, [field]: val }));
   };
+
+  useEffect(() => {
+    if (measurementId) {
+      getMeasurementById(measurementId).then(data => {
+        if (data) {
+          if (data.client_info) setClientInfo(data.client_info);
+          if (data.locations_data) setLocations(data.locations_data);
+        }
+      }).catch(err => console.error("Failed to fetch measurement:", err));
+    } else if (customerId) {
+      getCustomerById(customerId).then(data => {
+        if (data) {
+          setClientInfo(prev => ({
+            ...prev,
+            clientName: data.name || "",
+            clientAddress: data.address || "",
+            contactNumber: data.phone || "",
+            email: data.email || "",
+            customerType: "Existing"
+          }));
+        }
+      }).catch(err => console.error("Failed to load customer", err));
+    }
+  }, [customerId, measurementId]);
 
   const { clientName, clientAddress, customer, email, contactNumber, jobId, date, dateTime, jobType, jobHardness, numberOfInstallers, installationTimeframe, measuredOrder, checkMeasurements, windowsStats, houseType, parkingFlexibility, pets, floorStates, clearances, damageHoles, existingCovering, findUs, customerOrigin, colourTheme, explainProduct, clientUnderstandsLevel, fabricSelection, componentsSelection, changesToGetDeposit, measurementsNote, installationNote, productNote, photos } = clientInfo;
 
@@ -676,10 +731,35 @@ export default function NewMeasurementPage() {
     }));
   }, []);
 
-  const handleSave = () => {
-    const payload = { clientInfo, locations };
-    console.log("Saved measurement sheet:", payload);
-    alert("✅ Measurement sheet saved successfully!");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const payload = {
+        customer_id: customerId || null,
+        job_id: queryJobId || null,
+        job_no: jobId || "Draft",
+        date: date,
+        status: "Draft", // default
+        locations_count: locations.length,
+        coverings_count: locations.reduce((acc, loc) => acc + loc.coverings.length, 0),
+        client_info: clientInfo,
+        locations_data: locations,
+      };
+      await createMeasurement(payload);
+      alert("✅ Measurement sheet saved successfully!");
+      if (onSaveSuccess) {
+        onSaveSuccess();
+      } else {
+        router.push("/measurements");
+      }
+    } catch (err) {
+      console.error("Failed to save measurement sheet:", err);
+      alert("❌ Failed to save measurement sheet: " + (err as any).message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const activeLoc = locations.find(l => l.id === activeLocId);
@@ -1018,14 +1098,16 @@ export default function NewMeasurementPage() {
               </div>
 
               {/* Add covering buttons */}
-              <div className="flex gap-3 pt-4 border-t border-border mt-6">
-                <Button onClick={() => addCovering(activeLoc.id)} className="gap-2 bg-muted/50 hover:bg-muted text-foreground border border-border shadow-sm">
-                  <Plus className="h-4 w-4 text-accent" /> Add Another Component / Layer
-                </Button>
-                <Button variant="ghost" onClick={() => addNoCovering(activeLoc.id)} className="gap-2 text-muted-foreground hover:text-foreground">
-                  Mark as "No Covering"
-                </Button>
-              </div>
+              {!isReadOnly && (
+                <div className="flex gap-3 pt-4 border-t border-border mt-6">
+                  <Button onClick={() => addCovering(activeLoc.id)} className="gap-2 bg-muted/50 hover:bg-muted text-foreground border border-border shadow-sm">
+                    <Plus className="h-4 w-4 text-accent" /> Add Another Component / Layer
+                  </Button>
+                  <Button variant="ghost" onClick={() => addNoCovering(activeLoc.id)} className="gap-2 text-muted-foreground hover:text-foreground">
+                    Mark as "No Covering"
+                  </Button>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -1036,10 +1118,18 @@ export default function NewMeasurementPage() {
         <Button variant="ghost" onClick={() => setStep(1)} className="gap-2 text-muted-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to Check Details
         </Button>
-        <Button onClick={handleSave} size="lg" className="px-10 gap-2 bg-gradient-to-r from-accent to-indigo-600 hover:from-accent/90 hover:to-indigo-700 shadow-xl shadow-accent/20 text-white transition-all transform hover:-translate-y-0.5">
-          <Save className="h-5 w-5" />
-          Save Full Measurement Sheet
-        </Button>
+        <div className="flex gap-4">
+          <Button variant="outline" onClick={() => setShowPreview(true)} size="lg" className="px-8 gap-2 border-accent/20 text-accent hover:bg-accent/10 transition-all shadow-sm font-semibold">
+            <Eye className="h-5 w-5" />
+            Preview Sheet
+          </Button>
+          {!isReadOnly && (
+            <Button onClick={handleSave} disabled={isSaving} size="lg" className="px-10 gap-2 bg-gradient-to-r from-accent to-indigo-600 hover:from-accent/90 hover:to-indigo-700 shadow-xl shadow-accent/20 text-white transition-all transform hover:-translate-y-0.5">
+              <Save className="h-5 w-5" />
+              {isSaving ? "Saving..." : "Save Full Measurement Sheet"}
+            </Button>
+          )}
+        </div>
       </div>
     </motion.div>
   );
@@ -1050,20 +1140,27 @@ export default function NewMeasurementPage() {
       {/* Page Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center gap-4">
-          <Link href="/measurements">
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground rounded-xl border border-border/50 hover:bg-muted/50 transition-colors">
+          {onCancel ? (
+            <Button variant="ghost" size="icon" onClick={onCancel} className="h-10 w-10 text-muted-foreground rounded-xl border border-border/50 hover:bg-muted/50 transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </Button>
-          </Link>
+          ) : (
+            <Link href="/measurements">
+              <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground rounded-xl border border-border/50 hover:bg-muted/50 transition-colors">
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
           <div>
-            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">Measurement Form</h1>
-            <p className="text-sm text-muted-foreground mt-1">Record site dimensions and specifications.</p>
+            <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">{isReadOnly ? 'Measurement Sheet Preview' : 'Measurement Form'}</h1>
+            <p className="text-sm text-muted-foreground mt-1">{isReadOnly ? 'Read-only preview of recorded site dimensions and specifications.' : 'Record site dimensions and specifications.'}</p>
           </div>
         </div>
       </div>
 
-      {/* Step Indicator */}
-      <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2 no-scrollbar">
+      <div className={isReadOnly ? "pointer-events-none opacity-90" : ""}>
+        {/* Step Indicator */}
+        <div className="flex items-center gap-2 mb-10 overflow-x-auto pb-2 no-scrollbar pointer-events-auto">
         {[
           { n: 1, label: "Client & Site Info", icon: User },
           { n: 2, label: "Window Measurements", icon: Ruler },
@@ -1098,6 +1195,47 @@ export default function NewMeasurementPage() {
           {step === 2 && <motion.div key="step2">{renderStep2()}</motion.div>}
         </AnimatePresence>
       </main>
+      </div>
+
+      {/* Preview Modal */}
+      {showPreview && (
+        <DocumentPreviewModal
+          file={{
+            name: `Measurement Sheet - ${jobId || "Draft"}`,
+            type: "PDF Document",
+            size: "Live Preview",
+            date: date || new Date().toISOString().slice(0, 10),
+          }}
+          onClose={() => setShowPreview(false)}
+          mockData={{
+            header: {
+              clientName: clientName || "Unnamed Client",
+              clientNumber: customer || "N/A",
+              projectManager: "System",
+              status: "Draft",
+              productionDate: date || "TBD",
+              startTime: dateTime ? new Date(dateTime).toLocaleTimeString() : "TBD",
+              finishedTime: "TBD",
+            },
+            jobs: locations.flatMap(loc => loc.coverings.map((cov, idx) => ({
+              id: `${loc.id}-${idx + 1}`,
+              location: loc.locationName || `Loc ${loc.id}`,
+              collectionName: cov.coveringType !== "No Covering" ? cov.spec || cov.opacity : "No Covering",
+              bracket: cov.brackets,
+              control: cov.sp3,
+              wActual: cov.outWidth,
+              hActual: cov.outDrop,
+              neededFabric: `${((cov.outWidth + 200) / 1000).toFixed(2)}m`,
+            }))),
+            fabricTracking: {
+              neededFabric: `${locations.reduce((acc, loc) => acc + loc.coverings.reduce((sum, cov) => sum + (cov.outWidth + 200) / 1000, 0), 0).toFixed(2)}m`,
+              anyStock: "N/A",
+              balanceFabric: "TBD",
+            },
+            productionNotes: `${productNote}\n${installationNote}`
+          }}
+        />
+      )}
     </div>
   );
 }

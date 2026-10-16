@@ -2,36 +2,15 @@ import { supabase } from '../supabaseClient';
 import { Job, PaymentHistory, Invoice } from './types';
 
 export const getJobs = async () => {
-  const { data, error } = await supabase
-    .from('jobs')
-    .select(`
-      *,
-      customer:customers(*),
-      payment_history(*),
-      invoices(*)
-    `)
-    .order('created_at', { ascending: false });
-  
+  const { data, error } = await supabase.from('jobs').select('*, customer:customers(*)');
   if (error) throw error;
-  return data;
+  return data as any[];
 };
 
 export const getJobById = async (id: string) => {
-  const { data, error } = await supabase
-    .from('jobs')
-    .select(`
-      *,
-      customer:customers(*),
-      payment_history(*),
-      invoices(*),
-      enquiry:enquiries(*),
-      quotation:quotations(*)
-    `)
-    .eq('id', id)
-    .single();
-  
+  const { data, error } = await supabase.from('jobs').select('*, customer:customers(*)').eq('id', id).single();
   if (error) throw error;
-  return data;
+  return data as any;
 };
 
 export const createJob = async (job: Omit<Job, 'id' | 'created_at' | 'updated_at'>) => {

@@ -3,19 +3,33 @@
 import { useState, use } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BackButton } from "@/components/ui/BackButton";
 import { ChevronLeft, Mail, Package, CalendarIcon, DollarSign, Store, Clock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { getOrder, getSupplier } from "@/lib/data";
+import { getOrderById } from "@/lib/db/orders";
+import { getSupplierById } from "@/lib/db/suppliers";
 
-export default function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
-  const order = getOrder(id);
+export default async function OrderDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  let order;
+  let supplier;
+  try {
+    order = await getOrderById(id);
+    if (order) {
+      supplier = await getSupplierById(order.supplier_id);
+    }
+  } catch (e) {
+    console.error(e);
+  }
   
-  if (!order || order.id === "PO-NEW" && id !== "PO-NEW") {
+  if (!order || (order.order_id === "PO-NEW" && id !== "PO-NEW")) {
     notFound();
   }
 
-  const supplier = getSupplier(order.supplierId);
+  if (!supplier) {
+    supplier = { name: "Unknown", email: "N/A", phone: "N/A", category: "N/A" };
+  }
+
   const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent">("idle");
 
   const handleSendEmail = () => {
@@ -30,17 +44,14 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
     <div className="p-6 lg:p-8 max-w-5xl mx-auto gap-8 flex flex-col">
       {/* Header and Back Link */}
       <div>
-        <Link href="/orders" className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground mb-4 transition-colors">
-          <ChevronLeft className="mr-1 h-4 w-4" />
-          Back to Orders
-        </Link>
+        <BackButton label="Back" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-accent/10 text-xl font-bold text-accent">
-              {order.initials}
+              {supplier.name ? supplier.name.substring(0, 2).toUpperCase() : "PO"}
             </span>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-foreground">Order {order.id}</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">Order {order.order_id.substring(0, 8)}</h1>
               <div className="flex items-center gap-2 mt-1">
                 <span className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
                   order.status === "Order Placed" ? "bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-400/10 dark:text-blue-400 dark:ring-blue-400/30" :
@@ -120,7 +131,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Items</p>
-                  <p className="font-medium text-foreground">{order.item}</p>
+                  <p className="font-medium text-foreground">{order.products_catalog_id}</p>
                 </div>
               </div>
 
@@ -130,7 +141,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Total Amount</p>
-                  <p className="font-medium text-foreground">{order.amount}</p>
+                  <p className="font-medium text-foreground">${order.total_amount}</p>
                 </div>
               </div>
 
@@ -140,7 +151,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Order Date</p>
-                  <p className="font-medium text-foreground">{order.date}</p>
+                  <p className="font-medium text-foreground">{new Date(order.order_date).toLocaleDateString()}</p>
                 </div>
               </div>
 
@@ -150,7 +161,7 @@ export default function OrderDetailsPage({ params }: { params: Promise<{ id: str
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Expected Delivery</p>
-                  <p className="font-medium text-foreground">{order.expected}</p>
+                  <p className="font-medium text-foreground">{order.expected_delivery_date ? new Date(order.expected_delivery_date).toLocaleDateString() : "TBD"}</p>
                 </div>
               </div>
             </div>

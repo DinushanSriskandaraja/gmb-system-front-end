@@ -1,7 +1,6 @@
 "use client";
 
 import { Bell, Search, Command } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { motion } from "framer-motion";
 
 export function Header() {
@@ -29,8 +28,6 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-4">
-        <ThemeToggle />
-        
         {/* Notifications */}
         <motion.button
           whileHover={{ scale: 1.05 }}

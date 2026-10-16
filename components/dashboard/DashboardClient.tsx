@@ -188,7 +188,7 @@ export function DashboardClient({ jobs, customers, orders }: { jobs: any[], cust
             <h2 className="text-xl font-black text-foreground mb-6 relative z-10">Incoming Stock</h2>
             <div className="space-y-6 relative z-10">
               {orders.filter(o => o.status === "Pending Order" || o.status === "Order Placed").slice(0, 3).map(o => (
-                <motion.div key={o.order_id} whileHover={{ x: 4 }} className="flex justify-between items-center gap-4 group">
+                <motion.div key={o.order_id || o.id} whileHover={{ x: 4 }} className="flex justify-between items-center gap-4 group">
                   <div className="bg-muted rounded-xl p-3 shrink-0 text-muted-foreground group-hover:bg-accent/10 group-hover:text-accent transition-colors">
                     <Package className="w-5 h-5" />
                   </div>

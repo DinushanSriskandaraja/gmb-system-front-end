@@ -1,14 +1,11 @@
 import { supabase } from '../supabaseClient';
-import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 
 export function createDbHelper<T extends { [key: string]: any }>(tableName: string, idField: string) {
   return {
     async getAll(options?: { orderBy?: string; ascending?: boolean }) {
       let query = supabase.from(tableName).select('*');
       if (options?.orderBy) {
-        query = query.order(options.orderBy, { ascending: options.ascending ?? false });
-      } else {
-        query = query.order('created_at', { ascending: false });
+        query = query.order(options.orderBy, { ascending: options.ascending ?? true });
       }
       const { data, error } = await query;
       if (error) throw error;
@@ -28,7 +25,7 @@ export function createDbHelper<T extends { [key: string]: any }>(tableName: stri
     async create(item: Omit<T, any>) {
       const { data, error } = await supabase
         .from(tableName)
-        .insert([item])
+        .insert(item as any)
         .select()
         .single();
       if (error) throw error;
@@ -39,7 +36,7 @@ export function createDbHelper<T extends { [key: string]: any }>(tableName: stri
       const { data, error } = await supabase
         .from(tableName)
         .update(updates as any)
-        .eq(idField, id as any)
+        .eq(idField, id)
         .select()
         .single();
       if (error) throw error;
@@ -55,7 +52,6 @@ export function createDbHelper<T extends { [key: string]: any }>(tableName: stri
       return true;
     },
 
-    // Custom query helper
     query() {
       return supabase.from(tableName).select('*');
     }

@@ -15,9 +15,9 @@
   --input:              #e4e4e7;
   --ring:               #18181b;
 
-  /* Brand / Accent - Minimal */
-  --accent:             #f4f4f5;
-  --accent-foreground:  #09090b;
+  /* Brand / Accent - Standard Blue */
+  --accent:             #3b82f6;
+  --accent-foreground:  #ffffff;
 
   /* Primary (buttons) */
   --primary:            #18181b;
@@ -38,41 +38,8 @@
   --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
   --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
   --shadow-xl:  0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
-}
 
-.dark {
-  /* Surfaces - Deep Zinc */
-  --background:         #09090b;
-  --foreground:         #fafafa;
-  --card:               #09090b;
-  --card-foreground:  #fafafa;
-
-  /* Structural */
-  --border:             #27272a;
-  --input:              #27272a;
-  --ring:               #d4d4d8;
-
-  /* Brand / Accent */
-  --accent:             #27272a;
-  --accent-foreground:  #fafafa;
-
-  /* Primary */
-  --primary:            #fafafa;
-  --primary-foreground: #09090b;
-
-  /* Muted */
-  --muted:              #27272a;
-  --muted-foreground:   #a1a1aa;
-
-  /* Sidebar */
-  --sidebar:            #09090b;
-  --sidebar-foreground: #a1a1aa;
-  --sidebar-active:     #fafafa;
-  --sidebar-muted:      #27272a;
-
-  /* Shadows */
-  --shadow-sm:  0 1px 2px 0 rgba(0,0,0,0.5);
-  --shadow-md:  0 4px 6px -1px rgba(0,0,0,0.5), 0 2px 4px -2px rgba(0,0,0,0.5);
+  --radius: 1rem;
 }
 
 /* ============================================================
@@ -96,6 +63,7 @@
   --color-sidebar-foreground:var(--sidebar-foreground);
   --font-sans: "Inter", var(--font-inter), system-ui, sans-serif;
   --font-heading: "Outfit", var(--font-geist-sans), sans-serif;
+  --radius: var(--radius);
 }
 
 /* ============================================================
@@ -146,20 +114,14 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  @apply rounded-2xl p-6 shadow-xl transition-all duration-300;
-}
-
-.dark .glass-card {
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #ffffff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  @apply p-6 shadow-sm transition-all duration-300;
 }
 
 .glass-card:hover {
-  @apply border-white/20 shadow-2xl;
+  @apply border-border/80 shadow-md;
 }
 
 .text-gradient {

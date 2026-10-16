@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { BackButton } from "@/components/ui/BackButton";
 import { QuotationEditor } from "@/components/quotations/QuotationEditor";
 import type { Quotation } from "@/lib/quotations";
 
@@ -178,13 +179,7 @@ function GenerateQuotationInner() {
     <div className="p-4 lg:p-8 max-w-7xl mx-auto">
       {/* Back nav */}
       <div className="mb-6 no-print">
-        <Link
-          href="/quotations/new"
-          className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="mr-1 h-4 w-4" />
-          Back to sheet picker
-        </Link>
+        <BackButton label="Back" />
       </div>
 
       {/* Info banner */}

@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { getQuotationsByCustomerId, updateQuotation } from "@/lib/db/quotations";
 import { getEnquiries, updateEnquiry } from "@/lib/db/enquiries";
 import { createJob, addPayment } from "@/lib/db/jobs";
+import { getMeasurementsByCustomerId } from "@/lib/db/measurements";
+import { MeasurementSheetModal } from "@/components/measurements/MeasurementSheetModal";
 
 type ModalMode = "quote" | "paperwork" | "payment" | null;
 
@@ -20,24 +22,33 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const [loading, setLoading] = useState(false);
   const [quotations, setQuotations] = useState<any[]>([]);
+  const [measurements, setMeasurements] = useState<any[]>([]);
   const [selectedQuote, setSelectedQuote] = useState("");
-  const [fetchingQuotes, setFetchingQuotes] = useState(false);
+  const [selectedMeasurement, setSelectedMeasurement] = useState("");
+  const [fetchingData, setFetchingData] = useState(false);
+  const [isMeasurementModalOpen, setIsMeasurementModalOpen] = useState(false);
 
   useEffect(() => {
-    if (modalMode === "payment") {
+    if (modalMode) {
       fetchData();
     }
   }, [modalMode]);
 
   const fetchData = async () => {
-    setFetchingQuotes(true);
+    setFetchingData(true);
     try {
-      const quotes = await getQuotationsByCustomerId(customerId);
-      setQuotations(quotes || []);
+      if (modalMode === "payment" || modalMode === "paperwork") {
+        const quotes = await getQuotationsByCustomerId(customerId);
+        setQuotations(quotes || []);
+      }
+      if (modalMode === "quote" || modalMode === "paperwork") {
+        const ms = await getMeasurementsByCustomerId(customerId);
+        setMeasurements(ms || []);
+      }
     } catch (err) {
-      console.error("Failed to fetch quotations", err);
+      console.error("Failed to fetch data", err);
     } finally {
-      setFetchingQuotes(false);
+      setFetchingData(false);
     }
   };
 
@@ -97,7 +108,7 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
   return (
     <>
       <div className="flex flex-wrap items-center sm:justify-end gap-3 w-full sm:w-auto mt-4 sm:mt-0">
-        <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push("/measurements/new")}>
+        <Button variant="outline" className="w-full sm:w-auto" onClick={() => setIsMeasurementModalOpen(true)}>
           <File className="mr-2 h-4 w-4" />
           Create Measurement Sheet
         </Button>
@@ -139,7 +150,7 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
               {(modalMode === "paperwork" || modalMode === "payment") && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Select Quotation</label>
-                  {fetchingQuotes ? (
+                  {fetchingData ? (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="h-4 w-4 animate-spin" /> Loading quotes...
                     </div>
@@ -166,15 +177,31 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
               {modalMode !== "payment" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-foreground">Select Measurement Sheet</label>
-                  <select className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus:ring-2 focus:ring-accent outline-none">
-                    <option value="">Select a measurement sheet...</option>
-                    <option value="m1">Sheet v1 (Oct 14, 2026)</option>
-                    <option value="m2">Sheet v2 (Oct 16, 2026)</option>
-                  </select>
+                  {fetchingData ? (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin" /> Loading measurement sheets...
+                    </div>
+                  ) : (
+                    <select 
+                      value={selectedMeasurement}
+                      onChange={(e) => setSelectedMeasurement(e.target.value)}
+                      className="w-full h-10 rounded-lg border border-input bg-background px-3 text-sm text-foreground focus:ring-2 focus:ring-accent outline-none"
+                    >
+                      <option value="">Select a measurement sheet...</option>
+                      {measurements.map(m => (
+                        <option key={m.id} value={m.id}>
+                          Measurement {m.job_no ? `#${m.job_no}` : ''} ({new Date(m.created_at || m.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+                        </option>
+                      ))}
+                      {measurements.length === 0 && (
+                        <option value="dummy" disabled>No measurement sheets found</option>
+                      )}
+                    </select>
+                  )}
                 </div>
               )}
 
-              {modalMode === "payment" && quotations.length === 0 && !fetchingQuotes && (
+              {modalMode === "payment" && quotations.length === 0 && !fetchingData && (
                 <p className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200">
                   This customer has no quotations. Please generate a quote first.
                 </p>
@@ -186,7 +213,11 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
               <Button
                 disabled={loading || (modalMode === "payment" && (!selectedQuote || quotations.length === 0))}
                 onClick={modalMode === "payment" ? handleMakePayment : () => {
-                  alert(`Successfully generated!`);
+                  if (modalMode === "quote") {
+                    router.push(`/quotations/generate?customerId=${customerId}${selectedMeasurement ? `&measurementId=${selectedMeasurement}` : ''}`);
+                  } else {
+                    alert(`Successfully generated paperwork for Measurement ID: ${selectedMeasurement || 'None'}`);
+                  }
                   setModalMode(null);
                 }}
               >
@@ -196,6 +227,14 @@ export function CustomerActionButtons({ customerId, hasJob }: CustomerActionButt
             </div>
           </div>
         </div>
+      )}
+
+      {isMeasurementModalOpen && (
+        <MeasurementSheetModal
+          isOpen={isMeasurementModalOpen}
+          onClose={() => setIsMeasurementModalOpen(false)}
+          customerId={customerId}
+        />
       )}
     </>
   );
