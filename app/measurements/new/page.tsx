@@ -620,7 +620,7 @@ export function MeasurementPageContent({
             clientAddress: data.address || "",
             contactNumber: data.phone || "",
             email: data.email || "",
-            customerType: "Existing"
+            customerType: "Old"
           }));
         }
       }).catch(err => console.error("Failed to load customer", err));

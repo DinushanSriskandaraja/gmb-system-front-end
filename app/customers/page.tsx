@@ -54,7 +54,7 @@ export default function CustomersPage() {
   const updateStatus = async (id: string, newStatus: string) => {
     try {
       // Optimistic update
-      setCustomers(prev => prev.map(c => (c.customer_id || c.id) === id ? { ...c, status: newStatus as any } : c));
+      setCustomers(prev => prev.map(c => c.customer_id === id ? { ...c, status: newStatus as any } : c));
       await updateCustomer(id, { status: newStatus as any });
     } catch (err) {
       console.error("Failed to update status", err);
@@ -115,7 +115,7 @@ export default function CustomersPage() {
             const initials = c.name.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
             return (
             <EntityCard
-              key={c.customer_id || c.id}
+              key={c.customer_id}
               initials={initials}
               title={c.name}
               subtitle={c.address || "No Address Provided"}
@@ -123,14 +123,14 @@ export default function CustomersPage() {
                 label: c.status, 
                 color: statusColors[c.status] || "bg-gray-50 text-gray-700",
                 options: statusOptions,
-                onValueChange: (val) => updateStatus(c.customer_id || c.id, val)
+                onValueChange: (val) => updateStatus(c.customer_id, val)
               }}
               meta={[
                 { icon: Phone,        label: c.phone || "No Phone" },
                 { icon: Mail,         label: c.email || "No Email" },
                 { icon: Clock,        label: `Req: ${new Date(c.created_at).toLocaleDateString()}` },
               ]}
-              onClick={() => router.push(`/customer-profile/${c.customer_id || c.id}`)}
+              onClick={() => router.push(`/customer-profile/${c.customer_id}`)}
             />
           )})}
           {visibleCustomers.length === 0 && (

@@ -35,7 +35,7 @@ export interface WindowLocation {
 }
 
 export interface ClientInfo {
-  customerType?: "New" | "Old";
+  customerType?: "New" | "Old" | "Existing";
   clientName: string;
   clientAddress: string;
   email: string;
